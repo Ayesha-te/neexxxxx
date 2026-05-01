@@ -8,6 +8,8 @@ import {
   type FormEvent,
 } from "react";
 import {
+  ArrowDownToLine,
+  ArrowUpFromLine,
   ArrowUpRight,
   BadgeDollarSign,
   CheckCircle2,
@@ -43,13 +45,15 @@ import {
   processRewardTicket,
   subscribeToAdminData,
   type AdminSnapshot,
+  type BankTransaction,
+  type BankTransactionType,
   type Member,
   type RewardPayout,
   type RewardTicket,
 } from "@/lib/admin-data";
 import { cn } from "@/lib/utils";
 
-type AdminView = "dashboard" | "members" | "rewards" | "payouts";
+type AdminView = "dashboard" | "members" | "rewards" | "banking" | "payouts";
 
 interface AdminSession {
   identifier: string;
@@ -70,6 +74,7 @@ const navigationItems: Array<{
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "members", label: "Members", icon: Users },
   { id: "rewards", label: "Reward Tickets", icon: Ticket },
+  { id: "banking", label: "Banking", icon: Wallet },
   { id: "payouts", label: "Payouts", icon: BadgeDollarSign },
 ];
 
@@ -232,6 +237,9 @@ function AdminWorkspace({ session, onLogout }: { session: AdminSession; onLogout
   const pendingTicketCount = snapshot.rewardTickets.filter(
     (ticket) => ticket.status === "pending",
   ).length;
+  const pendingBankRequestCount = snapshot.bankTransactions.filter(
+    (transaction) => transaction.status === "pending",
+  ).length;
 
   return (
     <div className="panel-grid min-h-screen px-4 py-4 sm:px-6 lg:px-8">
@@ -273,6 +281,11 @@ function AdminWorkspace({ session, onLogout }: { session: AdminSession; onLogout
                       {pendingTicketCount}
                     </span>
                   ) : null}
+                  {item.id === "banking" && pendingBankRequestCount ? (
+                    <span className="ml-auto rounded-full bg-background/25 px-2 py-0.5 text-xs text-primary-foreground">
+                      {pendingBankRequestCount}
+                    </span>
+                  ) : null}
                 </button>
               );
             })}
@@ -306,6 +319,7 @@ function AdminWorkspace({ session, onLogout }: { session: AdminSession; onLogout
                 {activeView === "dashboard" && "Reward operations overview"}
                 {activeView === "members" && "All members and account details"}
                 {activeView === "rewards" && "Reward tickets and distribution"}
+                {activeView === "banking" && "Deposit and withdrawal requests"}
                 {activeView === "payouts" && "Processed reward history"}
               </h1>
               <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
@@ -314,7 +328,7 @@ function AdminWorkspace({ session, onLogout }: { session: AdminSession; onLogout
               </p>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <QuickMetric
                 label="Members"
                 value={snapshot.members.length}
@@ -328,6 +342,12 @@ function AdminWorkspace({ session, onLogout }: { session: AdminSession; onLogout
                 }
                 accent="text-gold"
                 icon={Ticket}
+              />
+              <QuickMetric
+                label="Bank requests"
+                value={snapshot.bankTransactions.length}
+                accent="text-secondary"
+                icon={Wallet}
               />
               <QuickMetric
                 label="Total payouts"
@@ -358,6 +378,10 @@ function AdminWorkspace({ session, onLogout }: { session: AdminSession; onLogout
               rewardTickets={snapshot.rewardTickets}
               adminIdentifier={session.identifier}
             />
+          ) : null}
+
+          {activeView === "banking" ? (
+            <BankingPage bankTransactions={snapshot.bankTransactions} />
           ) : null}
 
           {activeView === "payouts" ? (
@@ -985,6 +1009,150 @@ function RewardsPage({
   );
 }
 
+function BankingPage({ bankTransactions }: { bankTransactions: BankTransaction[] }) {
+  const [filter, setFilter] = useState<"all" | BankTransactionType>("all");
+
+  const filteredTransactions = useMemo(
+    () =>
+      bankTransactions
+        .filter((transaction) => filter === "all" || transaction.type === filter)
+        .slice()
+        .sort(
+          (left, right) =>
+            new Date(right.requestedAt).getTime() - new Date(left.requestedAt).getTime(),
+        ),
+    [bankTransactions, filter],
+  );
+
+  const pendingCount = useMemo(
+    () => bankTransactions.filter((transaction) => transaction.status === "pending").length,
+    [bankTransactions],
+  );
+  const depositCount = useMemo(
+    () => bankTransactions.filter((transaction) => transaction.type === "deposit").length,
+    [bankTransactions],
+  );
+  const withdrawalCount = useMemo(
+    () => bankTransactions.filter((transaction) => transaction.type === "withdrawal").length,
+    [bankTransactions],
+  );
+
+  return (
+    <div className="space-y-6">
+      <section className="grid gap-4 md:grid-cols-3">
+        <StatCard
+          title="Pending requests"
+          value={pendingCount}
+          detail="Waiting for finance team review"
+          icon={Wallet}
+          accent="text-gold"
+        />
+        <StatCard
+          title="Deposit requests"
+          value={depositCount}
+          detail="Submitted from the wallet deposit form"
+          icon={ArrowDownToLine}
+          accent="text-success"
+        />
+        <StatCard
+          title="Withdrawal requests"
+          value={withdrawalCount}
+          detail="Submitted from the wallet withdrawal form"
+          icon={ArrowUpFromLine}
+          accent="text-primary"
+        />
+      </section>
+
+      <Card className="glass border-border/40">
+        <CardHeader className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <CardTitle>Banking requests</CardTitle>
+            <CardDescription>
+              Deposits and withdrawals submitted by members now show up here with account name,
+              account number, bank name, amount, and status.
+            </CardDescription>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {(["all", "deposit", "withdrawal"] as const).map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => setFilter(option)}
+                className={cn(
+                  "rounded-2xl px-4 py-2 text-sm font-medium transition-all",
+                  filter === option
+                    ? "gradient-primary text-primary-foreground shadow-[var(--shadow-glow)]"
+                    : "bg-background/35 text-muted-foreground hover:bg-accent hover:text-foreground",
+                )}
+              >
+                {option === "all"
+                  ? "All requests"
+                  : option === "deposit"
+                    ? "Deposits"
+                    : "Withdrawals"}
+              </button>
+            ))}
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow className="border-border/40 hover:bg-transparent">
+                <TableHead>Member</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Bank</TableHead>
+                <TableHead>Account name</TableHead>
+                <TableHead>Account number</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Requested</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredTransactions.length ? (
+                filteredTransactions.map((transaction) => (
+                  <TableRow key={transaction.id} className="border-border/30">
+                    <TableCell>
+                      <div className="font-medium">{transaction.memberName}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {transaction.memberEmail}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <BankTransactionTypeBadge type={transaction.type} />
+                    </TableCell>
+                    <TableCell>{transaction.bankName}</TableCell>
+                    <TableCell>{transaction.accountName}</TableCell>
+                    <TableCell className="font-mono text-xs">
+                      {transaction.accountNumber}
+                    </TableCell>
+                    <TableCell className="text-right font-semibold">
+                      {formatCurrency(transaction.amount)}
+                    </TableCell>
+                    <TableCell>
+                      <BankTransactionStatusBadge status={transaction.status} />
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {formatDateTime(transaction.requestedAt)}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow className="border-border/30">
+                  <TableCell colSpan={8} className="py-10 text-center text-muted-foreground">
+                    No deposit or withdrawal requests have been submitted yet.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 function PayoutsPage({
   rewardPayouts,
   members,
@@ -1195,6 +1363,41 @@ function TicketStatusBadge({ status }: { status: RewardTicket["status"] }) {
   return (
     <Badge className="border-0 bg-primary/20 text-primary">
       <Ticket className="mr-1 size-3" />
+      Pending
+    </Badge>
+  );
+}
+
+function BankTransactionTypeBadge({ type }: { type: BankTransactionType }) {
+  return (
+    <Badge
+      className={cn(
+        "border-0",
+        type === "deposit" ? "bg-success/20 text-success" : "bg-primary/20 text-primary",
+      )}
+    >
+      {type === "deposit" ? (
+        <ArrowDownToLine className="mr-1 size-3" />
+      ) : (
+        <ArrowUpFromLine className="mr-1 size-3" />
+      )}
+      {type === "deposit" ? "Deposit" : "Withdrawal"}
+    </Badge>
+  );
+}
+
+function BankTransactionStatusBadge({ status }: { status: BankTransaction["status"] }) {
+  if (status === "approved") {
+    return <Badge className="border-0 bg-success/20 text-success">Approved</Badge>;
+  }
+
+  if (status === "rejected") {
+    return <Badge className="border-0 bg-destructive/20 text-destructive">Rejected</Badge>;
+  }
+
+  return (
+    <Badge className="border-0 bg-gold/20 text-gold">
+      <Clock3 className="mr-1 size-3" />
       Pending
     </Badge>
   );

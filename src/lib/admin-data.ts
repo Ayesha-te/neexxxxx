@@ -52,10 +52,28 @@ export interface RewardAllocation {
   amount: number;
 }
 
+export type BankTransactionType = "deposit" | "withdrawal";
+export type BankTransactionStatus = "pending" | "approved" | "rejected";
+
+export interface BankTransaction {
+  id: string;
+  memberId: string;
+  memberName: string;
+  memberEmail: string;
+  type: BankTransactionType;
+  accountName: string;
+  accountNumber: string;
+  bankName: string;
+  amount: number;
+  requestedAt: string;
+  status: BankTransactionStatus;
+}
+
 export interface AdminSnapshot {
   members: Member[];
   rewardTickets: RewardTicket[];
   rewardPayouts: RewardPayout[];
+  bankTransactions: BankTransaction[];
 }
 
 export const CURRENT_MEMBER_ID = "MEM-1001";
@@ -64,11 +82,13 @@ export const ADMIN_DATA_EVENT = "levelup-admin-data-sync";
 const MEMBERS_STORAGE_KEY = "levelup-admin-members-v1";
 const REWARD_TICKETS_STORAGE_KEY = "levelup-admin-reward-tickets-v1";
 const REWARD_PAYOUTS_STORAGE_KEY = "levelup-admin-reward-payouts-v1";
+const BANK_TRANSACTIONS_STORAGE_KEY = "levelup-admin-bank-transactions-v1";
 
 const STORAGE_KEYS = [
   MEMBERS_STORAGE_KEY,
   REWARD_TICKETS_STORAGE_KEY,
   REWARD_PAYOUTS_STORAGE_KEY,
+  BANK_TRANSACTIONS_STORAGE_KEY,
 ] as const;
 
 const DEFAULT_MEMBERS: Member[] = [
@@ -276,6 +296,8 @@ const DEFAULT_REWARD_PAYOUTS: RewardPayout[] = [
   },
 ];
 
+const DEFAULT_BANK_TRANSACTIONS: BankTransaction[] = [];
+
 function normalizeRewardTicket(ticket: RewardTicket) {
   const configuredReward = getMilestoneReward(ticket.rewardLevel);
 
@@ -356,6 +378,7 @@ export function ensureAdminSeedData() {
   seedStoredValue(MEMBERS_STORAGE_KEY, DEFAULT_MEMBERS);
   seedStoredValue(REWARD_TICKETS_STORAGE_KEY, DEFAULT_REWARD_TICKETS);
   seedStoredValue(REWARD_PAYOUTS_STORAGE_KEY, DEFAULT_REWARD_PAYOUTS);
+  seedStoredValue(BANK_TRANSACTIONS_STORAGE_KEY, DEFAULT_BANK_TRANSACTIONS);
 
   const tickets = getRewardTickets();
   const normalizedTickets = tickets.map(normalizeRewardTicket);
@@ -377,8 +400,16 @@ export function getRewardPayouts() {
   return readStoredValue(REWARD_PAYOUTS_STORAGE_KEY, DEFAULT_REWARD_PAYOUTS);
 }
 
+export function getBankTransactions() {
+  return readStoredValue(BANK_TRANSACTIONS_STORAGE_KEY, DEFAULT_BANK_TRANSACTIONS);
+}
+
 export function getRewardTicketsForMember(memberId: string) {
   return getRewardTickets().filter((ticket) => ticket.memberId === memberId);
+}
+
+export function getBankTransactionsForMember(memberId: string) {
+  return getBankTransactions().filter((transaction) => transaction.memberId === memberId);
 }
 
 export function getAdminSnapshot(): AdminSnapshot {
@@ -386,6 +417,7 @@ export function getAdminSnapshot(): AdminSnapshot {
     members: getMembers(),
     rewardTickets: getRewardTickets(),
     rewardPayouts: getRewardPayouts(),
+    bankTransactions: getBankTransactions(),
   };
 }
 
@@ -448,6 +480,56 @@ export function createRewardTicket(input: {
   writeStoredValue(REWARD_TICKETS_STORAGE_KEY, [ticket, ...tickets]);
 
   return ticket;
+}
+
+export function createBankTransactionRequest(input: {
+  memberId: string;
+  type: BankTransactionType;
+  accountName: string;
+  accountNumber: string;
+  bankName: string;
+  amount: number;
+}) {
+  ensureAdminSeedData();
+
+  const members = getMembers();
+  const member = members.find((entry) => entry.id === input.memberId);
+
+  if (!member) {
+    throw new Error("Member not found.");
+  }
+
+  const accountName = input.accountName.trim();
+  const accountNumber = input.accountNumber.trim();
+  const bankName = input.bankName.trim();
+  const amount = Number(input.amount);
+
+  if (!accountName || !accountNumber || !bankName) {
+    throw new Error("Fill in account name, account number, and bank name.");
+  }
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new Error("Enter a valid amount.");
+  }
+
+  const bankTransactions = getBankTransactions();
+  const transaction: BankTransaction = {
+    id: `${input.type === "deposit" ? "DEP" : "WDL"}-${Date.now()}`,
+    memberId: member.id,
+    memberName: member.name,
+    memberEmail: member.email,
+    type: input.type,
+    accountName,
+    accountNumber,
+    bankName,
+    amount,
+    requestedAt: new Date().toISOString(),
+    status: "pending",
+  };
+
+  writeStoredValue(BANK_TRANSACTIONS_STORAGE_KEY, [transaction, ...bankTransactions]);
+
+  return transaction;
 }
 
 export function processRewardTicket(input: {
