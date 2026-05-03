@@ -17,7 +17,7 @@ function AppLayout() {
         </main>
       </div>
       <MobileNav />
-      <Toaster richColors theme="dark" position="top-right" />
+      <Toaster richColors theme="light" position="top-right" />
     </div>
   );
 }

@@ -7,6 +7,7 @@ import {
   type FormEvent,
 } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { pageTitle } from "@/lib/brand";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,12 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  ArrowDownToLine,
-  ArrowUpFromLine,
-  Landmark,
-  Wallet as WalletIcon,
-} from "lucide-react";
+import { ArrowDownToLine, ArrowUpFromLine, Landmark, Wallet as WalletIcon } from "lucide-react";
 import { toast } from "sonner";
 import {
   CURRENT_MEMBER_ID,
@@ -39,7 +35,7 @@ import {
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_app/wallet")({
-  head: () => ({ meta: [{ title: "Wallet - Apex Invest" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Wallet") }] }),
   component: WalletPage,
 });
 
@@ -171,9 +167,7 @@ function WalletPage() {
                 <Field
                   label="Account number"
                   value={form.accountNumber}
-                  onChange={(value) =>
-                    setForm((current) => ({ ...current, accountNumber: value }))
-                  }
+                  onChange={(value) => setForm((current) => ({ ...current, accountNumber: value }))}
                   placeholder="031234567890"
                 />
                 <Field

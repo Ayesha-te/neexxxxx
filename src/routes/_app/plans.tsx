@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { pageTitle } from "@/lib/brand";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,7 +7,7 @@ import { Check, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/plans")({
-  head: () => ({ meta: [{ title: "Investment Plans — Apex Invest" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Investment Plans") }] }),
   component: Plans,
 });
 
@@ -25,7 +26,9 @@ function Plans() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Investment Plans</h1>
-        <p className="text-muted-foreground">Pick a plan to start earning across 3 levels. Higher plans = more points & higher %.</p>
+        <p className="text-muted-foreground">
+          Pick a plan to start earning across 3 levels. Higher plans = more points & higher %.
+        </p>
       </div>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         {plans.map((pl) => (
@@ -40,7 +43,9 @@ function Plans() {
             )}
             <CardContent className="p-6 space-y-4">
               <div>
-                <div className="text-xs text-muted-foreground uppercase tracking-wider">Plan {pl.n}</div>
+                <div className="text-xs text-muted-foreground uppercase tracking-wider">
+                  Plan {pl.n}
+                </div>
                 <div className="text-3xl font-bold mt-1">₨ {pl.p.toLocaleString()}</div>
                 <div className="text-sm text-gradient-gold font-semibold mt-1">{pl.pts} Points</div>
               </div>

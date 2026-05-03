@@ -7,6 +7,7 @@ import {
   type FormEvent,
 } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { pageTitle } from "@/lib/brand";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -54,7 +55,7 @@ import {
 } from "@/lib/rewards-system";
 
 export const Route = createFileRoute("/_app/rewards")({
-  head: () => ({ meta: [{ title: "Rewards - Apex Invest" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Rewards") }] }),
   component: Rewards,
 });
 

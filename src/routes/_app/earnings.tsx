@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { pageTitle } from "@/lib/brand";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -18,7 +19,7 @@ import {
 } from "@/lib/rewards-system";
 
 export const Route = createFileRoute("/_app/earnings")({
-  head: () => ({ meta: [{ title: "Earning System - Apex Invest" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Earning System") }] }),
   component: Earnings,
 });
 
