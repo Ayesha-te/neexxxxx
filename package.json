@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite dev",
     "prebuild": "npm run admin:build && node scripts/copy-admin.js",
-    "build": "vite build",
+    "build": "npm run prebuild && vite build",
     "build:dev": "npm run prebuild && vite build --mode development",
     "preview": "vite preview",
     "start": "node .output/server/index.mjs",

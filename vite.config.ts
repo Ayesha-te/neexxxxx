@@ -6,10 +6,18 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import { nitro } from "nitro/vite";
 
 export default defineConfig({
+  publicDir: "public",
   plugins: [
     tsConfigPaths(),
     tanstackStart(),
-    nitro({ preset: process.env.VERCEL ? "vercel" : "node-server" }),
+    nitro({ 
+      preset: 
+        process.env.VERCEL === "1" || process.env.VERCEL_ENV
+          ? "vercel" 
+          : process.env.NODE_ENV === "production" 
+            ? "vercel"
+            : "node-server"
+    }),
     viteReact(),
     tailwindcss(),
   ],
