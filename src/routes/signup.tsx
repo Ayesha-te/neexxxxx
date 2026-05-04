@@ -22,8 +22,7 @@ function SignupPage() {
         </Link>
         <div className="max-w-md space-y-4">
           <h2 className="text-4xl font-bold leading-tight">
-            Join a community built to help women{" "}
-            <span className="text-gradient">rise together</span>.
+            Where women <span className="text-gradient">lead, earn and rise</span> together.
           </h2>
           <p className="text-muted-foreground">
             Create your account to explore growth plans, rewards, and referral milestones in the

@@ -95,7 +95,7 @@ function Landing() {
               Built for confidence, community, and growth
             </div>
             <h1 className="text-4xl font-bold leading-[1.02] tracking-tight lg:text-7xl">
-              Rise together with <span className="text-gradient">{BRAND_NAME}</span>.
+              Where Women <span className="text-gradient">Lead, Earn and Rise</span> Together.
             </h1>
             <p className="mt-6 max-w-2xl text-lg text-muted-foreground lg:max-w-xl">
               Explore earning plans, referral rewards, and progress milestones in a warm,
