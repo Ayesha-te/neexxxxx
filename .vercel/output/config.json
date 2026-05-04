@@ -13,7 +13,17 @@
       "src": "/assets/(.*)"
     },
     {
+      "headers": {
+        "Cache-Control": "no-cache"
+      },
+      "src": "/(.*)"
+    },
+    {
       "handle": "filesystem"
+    },
+    {
+      "src": "(?<__isr_route>/(?:.*))",
+      "dest": "/__server"
     },
     {
       "src": "/(.*)",

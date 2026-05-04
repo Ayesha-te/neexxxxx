@@ -19,6 +19,11 @@ export default defineNitroConfig({
     },
   ],
 
-  // Ensure middleware runs correctly
-  noAnalyze: false,
+  // Ensure SSR routes are prioritized
+  routeRules: {
+    "/**": { cache: false, headers: { "Cache-Control": "no-cache" } },
+    "/**/*.js": { cache: { maxAge: 60 * 60 * 24 } },
+    "/**/*.css": { cache: { maxAge: 60 * 60 * 24 } },
+    "/**/*.json": { cache: { maxAge: 60 * 60 } },
+  },
 });
