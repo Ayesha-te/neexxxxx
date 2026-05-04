@@ -1,12 +1,14 @@
 import { defineNitroConfig } from "nitro/config";
 
 export default defineNitroConfig({
-  // Use vercel preset when on Vercel, otherwise node-server
+  // Use appropriate preset based on deployment platform
   preset: 
-    process.env.VERCEL === "1" || 
-    process.env.VERCEL_ENV === "production" ||
-    process.env.NODE_ENV === "production" && process.env.VERCEL_ENV
+    process.env.NETLIFY === "true"
+      ? "netlify"
+      : process.env.VERCEL === "1" || process.env.VERCEL_ENV
       ? "vercel" 
+      : process.env.NODE_ENV === "production"
+      ? "netlify"
       : "node-server",
   
   compatibilityDate: "2026-05-05",

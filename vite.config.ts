@@ -12,10 +12,12 @@ export default defineConfig({
     tanstackStart(),
     nitro({ 
       preset: 
-        process.env.VERCEL === "1" || process.env.VERCEL_ENV
+        process.env.NETLIFY === "true"
+          ? "netlify"
+          : process.env.VERCEL === "1" || process.env.VERCEL_ENV
           ? "vercel" 
           : process.env.NODE_ENV === "production" 
-            ? "vercel"
+            ? "netlify"
             : "node-server"
     }),
     viteReact(),
