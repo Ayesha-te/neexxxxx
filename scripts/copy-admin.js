@@ -2,7 +2,7 @@ import { copyFileSync, mkdirSync, readdirSync } from "fs";
 import { join } from "path";
 
 const adminDist = "./admin-panel/dist";
-const outputPublic = "./.output/public/admin";
+const publicAdmin = "./public/admin";
 
 function copyDir(src, dest) {
   mkdirSync(dest, { recursive: true });
@@ -21,8 +21,8 @@ function copyDir(src, dest) {
 }
 
 try {
-  console.log("Copying admin panel to Nitro public...");
-  copyDir(adminDist, outputPublic);
+  console.log("Copying admin panel to public directory...");
+  copyDir(adminDist, publicAdmin);
   console.log("✓ Admin panel copied successfully");
 } catch (error) {
   console.error("✗ Failed to copy admin panel:", error.message);

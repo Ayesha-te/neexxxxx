@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build && npm run admin:build && node scripts/post-build.js",
-    "build:dev": "vite build --mode development && npm run admin:build && node scripts/post-build.js",
+    "prebuild": "npm run admin:build && node scripts/copy-admin.js",
+    "build": "vite build",
+    "build:dev": "npm run prebuild && vite build --mode development",
     "preview": "vite preview",
     "start": "node .output/server/index.mjs",
     "admin:dev": "vite --config admin-panel/vite.config.ts",
