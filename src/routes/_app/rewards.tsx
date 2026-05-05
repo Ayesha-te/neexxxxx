@@ -290,6 +290,7 @@ function Rewards() {
               <TableHeader>
                 <TableRow className="border-border/40 hover:bg-transparent">
                   <TableHead>Level</TableHead>
+                  <TableHead className="text-gold">Points Required</TableHead>
                   <TableHead className="text-primary">Direct Bonus</TableHead>
                   <TableHead className="text-gold">Indirect Bonus</TableHead>
                   <TableHead className="text-success">Team Bonus</TableHead>
@@ -315,8 +316,11 @@ function Rewards() {
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <LevelBadge level={benefit.level} />
-                          <span className="font-semibold">Level {benefit.level}</span>
+                          <span className="font-semibold">{benefit.name}</span>
                         </div>
+                      </TableCell>
+                      <TableCell className="font-semibold text-gradient-gold">
+                        {benefit.pointsRequired} pts
                       </TableCell>
                       <TableCell className="font-semibold text-primary">
                         {benefit.directBonus}%
@@ -354,6 +358,7 @@ function Rewards() {
               {milestoneRewards.map((reward) => {
                 const status = getMilestoneStatus(memberLevel, reward.level);
                 const canSelect = status !== "locked";
+                const levelName = levelBenefits.find(b => b.level === reward.level)?.name || `Level ${reward.level}`;
 
                 return (
                   <button
@@ -373,7 +378,7 @@ function Rewards() {
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <div>
                             <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-                              Level {reward.level}
+                              {levelName}
                             </div>
                             <div className="mt-1 text-2xl font-bold text-gradient-gold">
                               Rs {reward.amount.toLocaleString()}

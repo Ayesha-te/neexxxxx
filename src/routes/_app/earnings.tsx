@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ArrowRight, Coins, Gift, TrendingUp, Trophy, Users, type LucideIcon } from "lucide-react";
+import { LevelBadge } from "@/components/LevelBadgeIcon";
 import {
   getLevelBenefit,
   getMilestoneStatus,
@@ -111,6 +112,7 @@ function Earnings() {
             <TableHeader>
               <TableRow className="border-border/40 hover:bg-transparent">
                 <TableHead>Level</TableHead>
+                <TableHead className="text-gold">Points Required</TableHead>
                 <TableHead className="text-primary">Direct Bonus</TableHead>
                 <TableHead className="text-gold">Indirect Bonus</TableHead>
                 <TableHead className="text-success">Team Bonus</TableHead>
@@ -129,7 +131,13 @@ function Earnings() {
                       benefit.level === currentLevel ? "bg-primary/10" : ""
                     }`}
                   >
-                    <TableCell className="font-bold">L{benefit.level}</TableCell>
+                    <TableCell className="font-bold">
+                      <div className="flex items-center gap-3">
+                        <LevelBadge level={benefit.level} size="sm" />
+                        <span>{benefit.name}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-bold text-gradient-gold">{benefit.pointsRequired} pts</TableCell>
                     <TableCell>
                       <Bar pct={benefit.directBonus} color="bg-primary" />
                     </TableCell>
