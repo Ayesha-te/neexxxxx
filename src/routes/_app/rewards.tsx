@@ -35,6 +35,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { toast } from "sonner";
+import { LevelBadge } from "@/components/LevelBadgeIcon";
 import {
   CURRENT_MEMBER_ID,
   createRewardTicket,
@@ -58,19 +59,6 @@ export const Route = createFileRoute("/_app/rewards")({
   head: () => ({ meta: [{ title: pageTitle("Rewards") }] }),
   component: Rewards,
 });
-
-const levelBadgePalette = [
-  "from-emerald-400 to-green-600",
-  "from-sky-400 to-blue-600",
-  "from-violet-400 to-purple-600",
-  "from-amber-300 to-orange-500",
-  "from-orange-400 to-amber-600",
-  "from-rose-400 to-red-600",
-  "from-fuchsia-500 to-violet-700",
-  "from-cyan-400 to-blue-700",
-  "from-yellow-300 to-amber-500",
-  "from-red-400 to-rose-700",
-];
 
 function Rewards() {
   const [memberLevel, setMemberLevel] = useState(1);
@@ -651,17 +639,9 @@ function SummaryTile({ label, value }: { label: string; value: number }) {
   );
 }
 
-function LevelBadge({ level, small }: { level: number; small?: boolean }) {
-  const gradient = levelBadgePalette[(level - 1) % levelBadgePalette.length];
+function LevelBadgeOld({ level, small }: { level: number; small?: boolean }) {
   const sizeClass = small ? "size-16 text-2xl" : "size-10 text-sm";
-
-  return (
-    <div
-      className={`grid ${sizeClass} place-items-center rounded-full border border-white/15 bg-gradient-to-br ${gradient} font-bold text-white shadow-[0_10px_30px_-18px_rgba(255,255,255,0.9)]`}
-    >
-      {level}
-    </div>
-  );
+  return <LevelBadge level={level} size={small ? "lg" : "md"} />;
 }
 
 function RowStatus({ status }: { status: MilestoneStatus }) {

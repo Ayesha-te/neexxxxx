@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, Sparkles, Gift, TrendingUp, Users } from "lucide-react";
 import { toast } from "sonner";
+import { LevelBadge } from "@/components/LevelBadgeIcon";
 import {
   Table,
   TableBody,
@@ -111,8 +112,8 @@ function Plans() {
                       {levelBenefits.map((benefit) => (
                         <TableRow key={benefit.level} className="border-border/30">
                           <TableCell className="font-bold">
-                            <div className="flex items-center gap-2">
-                              <span>{benefit.level}</span>
+                            <div className="flex items-center gap-3">
+                              <LevelBadge level={benefit.level} size="sm" />
                               <span className="text-sm uppercase">{benefit.name}</span>
                             </div>
                           </TableCell>
