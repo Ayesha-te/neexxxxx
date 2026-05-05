@@ -33,9 +33,6 @@ const plans = [
   { n: 5, p: 9500, pts: 63, queen: "Ruby Queen", perks: ["Premium plan", "Gold tier", "Reward boost"], featured: true },
   { n: 6, p: 12000, pts: 80, queen: "Diamond Queen", perks: ["Premium plan", "Higher rewards"] },
   { n: 7, p: 15000, pts: 100, queen: "Platinum Queen", perks: ["VIP plan", "Maximum rewards", "Concierge"] },
-  { n: 8, p: 18000, pts: 120, queen: "Elite Queen", perks: ["Elite status", "Priority rewards", "Personal support"] },
-  { n: 9, p: 21000, pts: 140, queen: "Royal Queen", perks: ["Royal benefits", "Exclusive access", "VIP concierge"] },
-  { n: 10, p: 25000, pts: 165, queen: "Imperial Queen", perks: ["Imperial status", "Maximum benefits", "Lifetime rewards"] },
 ];
 
 function Plans() {
@@ -61,7 +58,6 @@ function Plans() {
             <CardContent className="p-6 space-y-4">
               <div>
                 <div className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Plan {pl.n}</div>
-                <div className="text-lg font-bold text-gradient-gold uppercase mb-3">{pl.queen}</div>
                 <div className="text-3xl font-bold mt-1">₨ {pl.p.toLocaleString()}</div>
                 <div className="text-sm text-gradient-gold font-semibold mt-1">{pl.pts} Points</div>
               </div>
