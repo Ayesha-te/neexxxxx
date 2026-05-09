@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Menu, ShieldCheck, TrendingUp, Users } from "lucide-react";
+import { Menu, ShieldCheck, TrendingUp, Users, BookOpen } from "lucide-react";
 import brandLogo from "@/assets/logo.jpeg";
 import { BrandLockup } from "@/components/BrandLockup";
 import { Button } from "@/components/ui/button";
 import { BRAND_DESCRIPTION, BRAND_NAME } from "@/lib/brand";
+import { courses, totalCourses } from "@/lib/courses";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -182,6 +183,72 @@ function Landing() {
             { icon: TrendingUp, title: "Rs 18,000", subtitle: "Top reward milestone" },
             { icon: Users, title: "3 Levels", subtitle: "Referral commission system" },
             { icon: ShieldCheck, title: "24-48 Hours", subtitle: "Withdrawal processing time" },
+          ].map((feature) => (
+            <div key={feature.subtitle} className="glass rounded-2xl p-6 text-left">
+              <feature.icon className="mb-3 size-6 text-gold" />
+              <div className="text-2xl font-bold text-gradient">{feature.title}</div>
+              <div className="text-sm text-muted-foreground">{feature.subtitle}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Courses Section */}
+      <section className="mx-auto max-w-7xl px-6 py-16 lg:px-12 lg:py-24">
+        <div className="text-center mb-12">
+          <div className="glass mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium">
+            <BookOpen className="size-4 text-gold" />
+            Learn, Earn & Empower Your Future
+          </div>
+          <h2 className="text-4xl font-bold leading-tight lg:text-5xl mb-3">
+            35+ <span className="text-gradient-gold">Premium Courses</span>
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Skills for Today, Success for Tomorrow - One Platform, Endless Opportunities
+          </p>
+        </div>
+
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          {Object.values(courses).map((category) => (
+            <div key={category.icon} className="glass rounded-2xl p-6 border border-border/40">
+              <div className="mb-5 space-y-2">
+                <div className="text-3xl">{category.icon}</div>
+                <h3 className="text-xl font-bold text-gradient">{category.name}</h3>
+              </div>
+              <ul className="space-y-2">
+                {category.courses.map((course, idx) => (
+                  <li key={idx} className="flex items-start gap-3 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    <span className="text-gold mt-1">✓</span>
+                    <span>{course}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-12 text-center">
+          <div className="glass inline-block rounded-2xl p-8 border border-gold/30 bg-gold/5 max-w-md">
+            <div className="text-4xl font-bold text-gradient-gold mb-2">{totalCourses}+</div>
+            <div className="text-lg font-semibold text-foreground mb-4">Premium Courses Available</div>
+            <p className="text-sm text-muted-foreground mb-6">
+              Expert Instructors • Certificate of Completion • Learn at Your Pace • Practical Skills for Real Success
+            </p>
+            <Link to="/courses">
+              <Button className="gradient-primary text-primary-foreground glow w-full">
+                Explore All Courses
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 py-16 lg:px-12 lg:py-24">
+        <div className="mx-auto mt-16 grid max-w-4xl gap-4 sm:grid-cols-3">
+          {[
+            { icon: TrendingUp, title: "Up to 48%", subtitle: "Income visibility" },
+            { icon: Users, title: "3 Levels", subtitle: "Referral support" },
+            { icon: ShieldCheck, title: "Always Clear", subtitle: "Dashboard-first tracking" },
           ].map((feature) => (
             <div key={feature.subtitle} className="glass rounded-2xl p-6 text-left">
               <feature.icon className="mb-3 size-6 text-gold" />

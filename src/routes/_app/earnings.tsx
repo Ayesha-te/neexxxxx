@@ -238,7 +238,10 @@ function Earnings() {
                   </Badge>
                 </div>
                 <div className="mt-4 grid gap-3 md:grid-cols-3">
-                  <Metric label="Plan points" value={String(item.metrics?.points ?? item.plan?.points ?? 0)} />
+                  <Metric
+                    label="Plan points"
+                    value={String(item.metrics?.points ?? item.plan?.points ?? 0)}
+                  />
                   <Metric
                     label="Referral unlock"
                     value={
