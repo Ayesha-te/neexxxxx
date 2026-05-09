@@ -1,10 +1,12 @@
 const DEV_API_BASE_URL = "http://localhost:4000/api";
+const PROD_API_BASE_URL = "/api";
+const CUSTOM_API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.trim();
 
-// TanStack Start serves the frontend from its own dev server, so local API
-// requests need the backend origin unless an explicit override is provided.
+// The frontend talks to the backend API only. MongoDB credentials must never
+// be exposed in browser code.
 export const API_BASE_URL = (
-  import.meta.env.VITE_API_BASE_URL?.trim() ||
-  (import.meta.env.DEV ? DEV_API_BASE_URL : "/api")
+  CUSTOM_API_BASE_URL ||
+  (import.meta.env.DEV ? DEV_API_BASE_URL : PROD_API_BASE_URL)
 ).replace(/\/+$/, "");
 
 export class ApiError extends Error {
@@ -119,8 +121,8 @@ export async function apiRequest<T>(
 }
 
 export function formatCurrency(value: number) {
-  const currency = import.meta.env.VITE_PLATFORM_CURRENCY || "PKR";
-  const locale = import.meta.env.VITE_PLATFORM_LOCALE || "en-PK";
+  const currency = "PKR";
+  const locale = "en-PK";
   const currencySymbol = currency === "PKR" ? "Rs" : currency;
   
   return `${currencySymbol} ${new Intl.NumberFormat(locale, {
