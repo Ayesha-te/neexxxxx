@@ -1,12 +1,8 @@
-const DEFAULT_API_BASE_URL = "https://nexobackend3.vercel.app/api";
-const CUSTOM_API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.trim();
-
-// The frontend talks to the backend API only. MongoDB credentials must never
-// be exposed in browser code.
-export const API_BASE_URL = (
-  CUSTOM_API_BASE_URL ||
-  DEFAULT_API_BASE_URL
-).replace(/\/+$/, "");
+// Hardcode the deployed backend so GitHub builds do not depend on env vars.
+export const API_BASE_URL = "https://nexobackend3.vercel.app/api".replace(
+  /\/+$/,
+  "",
+);
 
 export class ApiError extends Error {
   status: number;
