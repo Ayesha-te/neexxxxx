@@ -1,12 +1,11 @@
-const DEV_API_BASE_URL = "http://localhost:4000/api";
-const PROD_API_BASE_URL = "/api";
+const DEFAULT_API_BASE_URL = "https://nexobackend3.vercel.app/api";
 const CUSTOM_API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.trim();
 
 // The frontend talks to the backend API only. MongoDB credentials must never
 // be exposed in browser code.
 export const API_BASE_URL = (
   CUSTOM_API_BASE_URL ||
-  (import.meta.env.DEV ? DEV_API_BASE_URL : PROD_API_BASE_URL)
+  DEFAULT_API_BASE_URL
 ).replace(/\/+$/, "");
 
 export class ApiError extends Error {
