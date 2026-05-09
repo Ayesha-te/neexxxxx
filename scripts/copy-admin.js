@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, mkdirSync, readdirSync } from "fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, rmSync } from "fs";
 import { join } from "path";
 
 const adminDistCandidates = [
@@ -31,6 +31,7 @@ try {
     process.exit(0);
   }
 
+  rmSync(publicAdmin, { recursive: true, force: true });
   console.log(`Copying admin panel assets from ${adminDist} to public/admin...`);
   copyDir(adminDist, publicAdmin);
   console.log("Admin panel assets copied successfully.");
