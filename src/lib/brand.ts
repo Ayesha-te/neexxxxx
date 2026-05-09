@@ -1,8 +1,8 @@
-export const BRAND_NAME = "Nexo Women Empowerment";
-export const BRAND_SHORT_NAME = "Nexo";
-export const BRAND_TAGLINE = "Women Empowerment";
-export const BRAND_DESCRIPTION =
-  "A community-first platform designed to help women grow confidence, earnings, and impact together.";
+export const BRAND_NAME = import.meta.env.VITE_APP_NAME || "Nexo Women Earning System";
+export const BRAND_SHORT_NAME = import.meta.env.VITE_APP_SHORT_NAME || "Nexo Women";
+export const BRAND_TAGLINE = "Women Earning System";
+export const BRAND_DESCRIPTION = import.meta.env.VITE_APP_DESCRIPTION ||
+  "A transparent earning platform with fixed plans, 3-level referral income, rank rewards, and simple withdrawal rules for women.";
 
 export function pageTitle(page: string) {
   return `${page} - ${BRAND_NAME}`;

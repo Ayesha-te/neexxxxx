@@ -1,29 +1,73 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { Copy, Share2, Users } from "lucide-react";
+import { toast } from "sonner";
 import { pageTitle } from "@/lib/brand";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Copy, Share2, Users } from "lucide-react";
-import { toast } from "sonner";
+import { apiRequest, formatCurrency, type AppUser } from "@/lib/api";
+import { useAppAuth } from "@/lib/auth";
+
+type ReferralsResponse = {
+  user: AppUser;
+  settings: {
+    level1Percent: number;
+    level2Percent: number;
+    level3Percent: number;
+  };
+  summary: {
+    level1: number;
+    level2: number;
+    level3: number;
+    directUsers: Array<{
+      id: string;
+      name: string;
+      email: string;
+      accountType: string;
+      joinedAt: string;
+      totalPoints: number;
+      activeInvestmentValue: number;
+    }>;
+  };
+};
 
 export const Route = createFileRoute("/_app/referrals")({
   head: () => ({ meta: [{ title: pageTitle("Referrals") }] }),
   component: Referrals,
 });
 
-const link = "https://nexo-women.app/r/NEXO-1234";
-
 function Referrals() {
+  const { token } = useAppAuth();
+  const [data, setData] = useState<ReferralsResponse | null>(null);
+
+  useEffect(() => {
+    if (!token) {
+      return;
+    }
+
+    void apiRequest<ReferralsResponse>("/user/referrals", { token }).then(setData);
+  }, [token]);
+
   const copy = async () => {
-    await navigator.clipboard.writeText(link);
+    if (!data?.user.referralLink) {
+      toast.error("Referral link is not available yet.");
+      return;
+    }
+
+    await navigator.clipboard.writeText(data.user.referralLink);
     toast.success("Referral link copied!");
   };
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Referral System</h1>
         <p className="text-muted-foreground">
-          Invite friends. Earn from 3 levels of their network.
+          Build only three levels and earn {data?.settings.level1Percent ?? 30}% /
+          {" "}
+          {data?.settings.level2Percent ?? 15}% / {data?.settings.level3Percent ?? 5}% on approved
+          team investments. Total commission = 50%.
         </p>
       </div>
 
@@ -31,37 +75,52 @@ function Referrals() {
         <CardHeader>
           <CardTitle>Your referral link</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col sm:flex-row gap-3">
-          <Input readOnly value={link} className="flex-1 bg-input/50" />
+        <CardContent className="flex flex-col gap-3 sm:flex-row">
+          <Input
+            readOnly
+            value={data?.user.referralLink ?? "Referral link unavailable"}
+            className="flex-1 bg-input/50"
+          />
           <Button onClick={copy} className="gradient-primary text-primary-foreground">
-            <Copy className="size-4 mr-2" /> Copy
+            <Copy className="mr-2 size-4" /> Copy
           </Button>
-          <Button variant="outline" onClick={() => toast.success("Share dialog opened")}>
-            <Share2 className="size-4 mr-2" /> Share
+          <Button
+            variant="outline"
+            onClick={() => toast.success("Your referral link is ready to share.")}
+          >
+            <Share2 className="mr-2 size-4" /> Share
           </Button>
         </CardContent>
       </Card>
 
-      <div className="grid sm:grid-cols-3 gap-4">
+      <div className="grid gap-4 sm:grid-cols-3">
         {[
-          { l: "Level 1", n: 12, e: 14200, c: "gradient-primary" },
-          { l: "Level 2", n: 38, e: 7820, c: "gradient-gold" },
-          { l: "Level 3", n: 96, e: 2800, c: "bg-success" },
-        ].map((r) => (
-          <Card key={r.l} className="glass border-border/40">
-            <CardContent className="p-6 space-y-2">
-              <div
-                className={`size-10 rounded-xl ${r.c} grid place-items-center text-primary-foreground`}
-              >
+          {
+            label: "Level 1",
+            count: data?.summary.level1 ?? 0,
+            detail: `${data?.settings.level1Percent ?? 30}% commission`,
+          },
+          {
+            label: "Level 2",
+            count: data?.summary.level2 ?? 0,
+            detail: `${data?.settings.level2Percent ?? 15}% commission`,
+          },
+          {
+            label: "Level 3",
+            count: data?.summary.level3 ?? 0,
+            detail: `${data?.settings.level3Percent ?? 5}% commission`,
+          },
+        ].map((item) => (
+          <Card key={item.label} className="glass border-border/40">
+            <CardContent className="space-y-2 p-6">
+              <div className="grid size-10 place-items-center rounded-xl gradient-primary text-primary-foreground">
                 <Users className="size-5" />
               </div>
-              <div className="text-xs text-muted-foreground uppercase">{r.l}</div>
+              <div className="text-xs uppercase text-muted-foreground">{item.label}</div>
               <div className="text-3xl font-bold">
-                {r.n} <span className="text-sm font-normal text-muted-foreground">people</span>
+                {item.count} <span className="text-sm font-normal text-muted-foreground">users</span>
               </div>
-              <div className="text-sm text-gradient-gold font-semibold">
-                Earned ₨ {r.e.toLocaleString()}
-              </div>
+              <div className="text-sm text-muted-foreground">{item.detail}</div>
             </CardContent>
           </Card>
         ))}
@@ -69,37 +128,45 @@ function Referrals() {
 
       <Card className="glass border-border/40">
         <CardHeader>
-          <CardTitle>Your downline tree</CardTitle>
+          <CardTitle>Direct Referrals</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-center gap-4">
-            <Node label="You" big />
-            <div className="h-6 w-px bg-border" />
-            <div className="flex gap-6">
-              {["Sara", "Bilal", "Hina"].map((n) => (
-                <div key={n} className="flex flex-col items-center gap-3">
-                  <Node label={n} />
-                  <div className="h-4 w-px bg-border" />
-                  <div className="flex gap-2">
-                    <Node label="L2" small />
-                    <Node label="L2" small />
+        <CardContent className="space-y-3">
+          {data?.summary.directUsers.length ? (
+            data.summary.directUsers.map((referral) => (
+              <div
+                key={referral.id}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/40 bg-background/35 p-4"
+              >
+                <div>
+                  <div className="font-semibold">{referral.name}</div>
+                  <div className="text-sm text-muted-foreground">{referral.email}</div>
+                  <div className="mt-2 text-xs text-muted-foreground capitalize">
+                    {referral.accountType.replace("_", " ")}
                   </div>
                 </div>
-              ))}
+                <div className="text-right">
+                  <div className="text-sm font-semibold">
+                    {formatCurrency(referral.activeInvestmentValue)}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {referral.totalPoints.toLocaleString()} points
+                  </div>
+                  <div className="mt-1 text-xs text-muted-foreground">
+                    Joined{" "}
+                    {new Date(referral.joinedAt).toLocaleDateString("en-PK", {
+                      dateStyle: "medium",
+                    })}
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-sm text-muted-foreground">
+              No direct referrals yet. Share your link to start building your team.
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
-    </div>
-  );
-}
-
-function Node({ label, big, small }: { label: string; big?: boolean; small?: boolean }) {
-  const size = big ? "size-16 text-base" : small ? "size-10 text-xs" : "size-12 text-sm";
-  const cls = big ? "gradient-gold text-gold-foreground glow-gold" : "glass text-foreground";
-  return (
-    <div className={`${size} ${cls} rounded-full grid place-items-center font-semibold`}>
-      {label}
     </div>
   );
 }

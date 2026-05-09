@@ -9,9 +9,9 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "start": "node .output/server/index.mjs",
-    "admin:dev": "vite --config admin-panel/vite.config.ts",
-    "admin:build": "vite build --config admin-panel/vite.config.ts",
-    "admin:preview": "vite preview --config admin-panel/vite.config.ts",
+    "admin:dev": "npm --prefix ../admin-panel run dev",
+    "admin:build": "npm --prefix ../admin-panel run build",
+    "admin:preview": "npm --prefix ../admin-panel run preview",
     "lint": "eslint .",
     "format": "prettier --write ."
   },

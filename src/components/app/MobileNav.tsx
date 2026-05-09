@@ -1,11 +1,11 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Layers, Gift, Users, Wallet } from "lucide-react";
+import { LayoutDashboard, Layers, Trophy, Users, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
   { to: "/dashboard", label: "Home", icon: LayoutDashboard },
   { to: "/plans", label: "Plans", icon: Layers },
-  { to: "/rewards", label: "Rewards", icon: Gift },
+  { to: "/rewards", label: "Ranks", icon: Trophy },
   { to: "/referrals", label: "Refer", icon: Users },
   { to: "/wallet", label: "Wallet", icon: Wallet },
 ] as const;

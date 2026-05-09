@@ -3,9 +3,11 @@ import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAppAuth } from "@/lib/auth";
 
 export function TopBar() {
   const [dark, setDark] = useState(false);
+  const { user, logout } = useAppAuth();
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
@@ -36,15 +38,25 @@ export function TopBar() {
           <Bell className="size-5" />
           <span className="absolute top-2 right-2 size-2 rounded-full bg-gold" />
         </Button>
+        <Button variant="ghost" className="hidden sm:inline-flex" onClick={logout}>
+          Logout
+        </Button>
         <div className="flex items-center gap-2 pl-2">
           <Avatar className="size-9 ring-2 ring-primary/40">
             <AvatarFallback className="gradient-primary text-primary-foreground font-semibold">
-              AK
+              {user?.name
+                .split(" ")
+                .map((part) => part[0])
+                .join("")
+                .slice(0, 2)
+                .toUpperCase() ?? "NX"}
             </AvatarFallback>
           </Avatar>
           <div className="hidden sm:block">
-            <div className="text-sm font-semibold leading-tight">Ali Khan</div>
-            <div className="text-xs text-muted-foreground">Level 5 - Gold</div>
+            <div className="text-sm font-semibold leading-tight">{user?.name ?? "Nexo User"}</div>
+            <div className="text-xs text-muted-foreground capitalize">
+              {(user?.accountType ?? "prospect").replace("_", " ")}
+            </div>
           </div>
         </div>
       </div>

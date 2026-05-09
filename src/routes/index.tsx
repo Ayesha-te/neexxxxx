@@ -92,14 +92,14 @@ function Landing() {
           <div className="text-center lg:text-left">
             <div className="glass mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium">
               <span className="size-2 rounded-full bg-gold animate-pulse" />
-              Built for confidence, community, and growth
+              Fixed plans, team income, and transparent rewards
             </div>
             <h1 className="text-4xl font-bold leading-[1.02] tracking-tight lg:text-7xl">
-              Rise together with <span className="text-gradient">{BRAND_NAME}</span>.
+              Build your team and grow with <span className="text-gradient">{BRAND_NAME}</span>.
             </h1>
             <p className="mt-6 max-w-2xl text-lg text-muted-foreground lg:max-w-xl">
-              Explore earning plans, referral rewards, and progress milestones in a warm,
-              community-first experience inspired by your new brand identity.
+              Start from Rs 500 to Rs 10,000, earn 30% / 15% / 5% across 3 levels, collect points,
+              unlock rank rewards up to Rs 18,000, and withdraw with simple platform rules.
             </p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
               <Link to="/signup">
@@ -107,7 +107,7 @@ function Landing() {
                   size="lg"
                   className="gradient-primary h-12 px-8 text-base text-primary-foreground glow"
                 >
-                  Join Nexo
+                  Join The System
                 </Button>
               </Link>
               <Link to="/dashboard">
@@ -124,18 +124,18 @@ function Landing() {
               {[
                 {
                   icon: TrendingUp,
-                  title: "Growth Paths",
-                  subtitle: "Plans, referrals, and rewards in one place",
+                  title: "5 Fixed Plans",
+                  subtitle: "Rs 500, 1500, 3000, 6000, and 10000",
                 },
                 {
                   icon: Users,
-                  title: "Women-First",
-                  subtitle: "A brand story centered on collective progress",
+                  title: "50% Team Income",
+                  subtitle: "30% + 15% + 5% across three levels",
                 },
                 {
                   icon: ShieldCheck,
-                  title: "Clear Tracking",
-                  subtitle: "Beautiful visibility into every milestone",
+                  title: "Rank Rewards",
+                  subtitle: "Milestones from 1,000 to 100,000 points",
                 },
               ].map((feature) => (
                 <div key={feature.subtitle} className="glass rounded-2xl p-5 text-left">
@@ -166,10 +166,10 @@ function Landing() {
                 />
                 <div className="text-right">
                   <div className="text-sm font-semibold text-gradient-gold">
-                    Signature Plum + Gold
+                    Women-focused growth model
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    Elegant branding carried across every screen
+                    Plans, points, rewards, and referrals in one system
                   </div>
                 </div>
               </div>
@@ -179,9 +179,9 @@ function Landing() {
 
         <div className="mx-auto mt-16 grid max-w-4xl gap-4 sm:grid-cols-3">
           {[
-            { icon: TrendingUp, title: "Up to 48%", subtitle: "Income visibility" },
-            { icon: Users, title: "3 Levels", subtitle: "Referral support" },
-            { icon: ShieldCheck, title: "Always Clear", subtitle: "Dashboard-first tracking" },
+            { icon: TrendingUp, title: "Rs 18,000", subtitle: "Top reward milestone" },
+            { icon: Users, title: "3 Levels", subtitle: "Referral commission system" },
+            { icon: ShieldCheck, title: "24-48 Hours", subtitle: "Withdrawal processing time" },
           ].map((feature) => (
             <div key={feature.subtitle} className="glass rounded-2xl p-6 text-left">
               <feature.icon className="mb-3 size-6 text-gold" />

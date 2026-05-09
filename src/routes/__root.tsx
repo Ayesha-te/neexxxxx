@@ -3,6 +3,109 @@ import { BRAND_DESCRIPTION, BRAND_NAME } from "@/lib/brand";
 
 import appCss from "../styles.css?url";
 
+const PRE_HYDRATION_EXTENSION_CLEANUP_SCRIPT = String.raw`
+  (() => {
+    const attributeNames = new Set([
+      "bis_register",
+      "bis_skin_checked",
+      "bis_use",
+      "cz-shortcut-listen",
+      "data-bis-config",
+      "data-dynamic-id",
+      "data-gr-ext-installed",
+      "data-lt-installed",
+      "data-new-gr-c-s-check-loaded",
+    ]);
+
+    const attributePrefixes = ["__processed_", "bis_"];
+    const extensionProtocols = ["chrome-extension://", "moz-extension://", "safari-extension://"];
+
+    const shouldRemove = (name) =>
+      attributeNames.has(name) || attributePrefixes.some((prefix) => name.startsWith(prefix));
+
+    const cleanAttributes = (element) => {
+      if (!element) {
+        return;
+      }
+
+      for (const attribute of Array.from(element.attributes)) {
+        if (shouldRemove(attribute.name)) {
+          element.removeAttribute(attribute.name);
+        }
+      }
+    };
+
+    const shouldRemoveNode = (element) => {
+      if (!element) {
+        return false;
+      }
+
+      const source = element.getAttribute("src") || element.getAttribute("href") || "";
+      return (
+        extensionProtocols.some((protocol) => source.startsWith(protocol)) ||
+        element.hasAttribute("data-bis-config")
+      );
+    };
+
+    const cleanElement = (element) => {
+      if (!element) {
+        return false;
+      }
+
+      if (shouldRemoveNode(element)) {
+        element.remove();
+        return true;
+      }
+
+      cleanAttributes(element);
+      return false;
+    };
+
+    const cleanTree = (root) => {
+      if (!(root instanceof Element)) {
+        return;
+      }
+
+      if (cleanElement(root)) {
+        return;
+      }
+
+      for (const element of root.querySelectorAll("*")) {
+        cleanElement(element);
+      }
+    };
+
+    cleanTree(document.documentElement);
+
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === "attributes") {
+          cleanElement(mutation.target);
+          continue;
+        }
+
+        for (const node of mutation.addedNodes) {
+          cleanTree(node);
+        }
+      }
+    });
+
+    observer.observe(document.documentElement, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+    });
+
+    window.addEventListener(
+      "load",
+      () => {
+        observer.disconnect();
+      },
+      { once: true },
+    );
+  })();
+`;
+
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -53,11 +156,15 @@ export const Route = createRootRoute({
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <head>
+    <html lang="en" suppressHydrationWarning>
+      <head suppressHydrationWarning>
+        <script
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: PRE_HYDRATION_EXTENSION_CLEANUP_SCRIPT }}
+        />
         <HeadContent />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         {children}
         <Scripts />
       </body>

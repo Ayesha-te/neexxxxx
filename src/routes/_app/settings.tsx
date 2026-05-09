@@ -1,13 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { pageTitle } from "@/lib/brand";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { toast } from "sonner";
+import { apiRequest, type AppUser } from "@/lib/api";
+import { useAppAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/_app/settings")({
   head: () => ({ meta: [{ title: pageTitle("Settings") }] }),
@@ -15,125 +16,140 @@ export const Route = createFileRoute("/_app/settings")({
 });
 
 function SettingsPage() {
+  const { user, token, refresh } = useAppAuth();
+  const [form, setForm] = useState({
+    name: user?.name ?? "",
+    phone: user?.phone ?? "",
+  });
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setForm({
+      name: user?.name ?? "",
+      phone: user?.phone ?? "",
+    });
+  }, [user?.name, user?.phone]);
+
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="max-w-4xl space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Profile Settings</h1>
-        <p className="text-muted-foreground">Manage your account, security and preferences.</p>
+        <p className="text-muted-foreground">
+          Update your profile and review your current account configuration.
+        </p>
       </div>
-      <Tabs defaultValue="profile" className="space-y-4">
-        <TabsList className="glass">
-          <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="security">Security</TabsTrigger>
-          <TabsTrigger value="kyc">KYC</TabsTrigger>
-          <TabsTrigger value="notif">Notifications</TabsTrigger>
-        </TabsList>
 
-        <TabsContent value="profile">
-          <Card className="glass border-border/40">
-            <CardContent className="p-6 space-y-5">
-              <div className="flex items-center gap-4">
-                <Avatar className="size-20 ring-2 ring-gold/40">
-                  <AvatarFallback className="gradient-primary text-primary-foreground text-xl">
-                    AK
-                  </AvatarFallback>
-                </Avatar>
-                <Button variant="outline">Change photo</Button>
+      <div className="grid gap-6 lg:grid-cols-[1fr,0.95fr]">
+        <Card className="glass border-border/40">
+          <CardHeader>
+            <CardTitle>Profile</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            <div className="flex items-center gap-4">
+              <Avatar className="size-20 ring-2 ring-gold/40">
+                <AvatarFallback className="gradient-primary text-xl text-primary-foreground">
+                  {user?.name
+                    .split(" ")
+                    .map((part) => part[0])
+                    .join("")
+                    .slice(0, 2)
+                    .toUpperCase() ?? "NX"}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <div className="text-lg font-semibold">{user?.name ?? "Nexo User"}</div>
+                <div className="text-sm text-muted-foreground capitalize">
+                  {(user?.accountType ?? "prospect").replace("_", " ")}
+                </div>
               </div>
-              <div className="grid sm:grid-cols-2 gap-4">
+            </div>
+
+            <form
+              className="space-y-4"
+              onSubmit={async (event) => {
+                event.preventDefault();
+                if (!token) {
+                  return;
+                }
+
+                setSaving(true);
+                try {
+                  await apiRequest<{ user: AppUser }>("/user/profile", {
+                    method: "PUT",
+                    token,
+                    body: form,
+                  });
+                  await refresh();
+                  toast.success("Profile updated");
+                } catch (error) {
+                  toast.error(error instanceof Error ? error.message : "Unable to update profile.");
+                } finally {
+                  setSaving(false);
+                }
+              }}
+            >
+              <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label>Full name</Label>
-                  <Input defaultValue="Ali Khan" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Email</Label>
-                  <Input defaultValue="ali@apex.com" />
+                  <Input
+                    value={form.name}
+                    onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Phone</Label>
-                  <Input defaultValue="+92 300 0000000" />
+                  <Input
+                    value={form.phone}
+                    onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))}
+                  />
                 </div>
                 <div className="space-y-2">
-                  <Label>Country</Label>
-                  <Input defaultValue="Pakistan" />
+                  <Label>Email</Label>
+                  <Input value={user?.email ?? ""} readOnly />
+                </div>
+                <div className="space-y-2">
+                  <Label>Referral code</Label>
+                  <Input value={user?.referralCode ?? ""} readOnly />
                 </div>
               </div>
-              <Button
-                onClick={() => toast.success("Profile updated")}
-                className="gradient-primary text-primary-foreground"
-              >
-                Save changes
+              <Button type="submit" disabled={saving} className="gradient-primary text-primary-foreground">
+                {saving ? "Saving..." : "Save changes"}
               </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
+            </form>
+          </CardContent>
+        </Card>
 
-        <TabsContent value="security">
-          <Card className="glass border-border/40">
-            <CardContent className="p-6 space-y-4">
-              <div className="space-y-2">
-                <Label>Current password</Label>
-                <Input type="password" />
-              </div>
-              <div className="space-y-2">
-                <Label>New password</Label>
-                <Input type="password" />
-              </div>
-              <div className="space-y-2">
-                <Label>Confirm new password</Label>
-                <Input type="password" />
-              </div>
-              <Button
-                onClick={() => toast.success("Password updated")}
-                className="gradient-primary text-primary-foreground"
-              >
-                Update password
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
+        <Card className="glass border-border/40">
+          <CardHeader>
+            <CardTitle>Account Snapshot</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Info label="Account type" value={(user?.accountType ?? "prospect").replace("_", " ")} />
+            <Info label="Referral code" value={user?.referralCode ?? "-"} />
+            <Info
+              label="Referral link"
+              value={user?.referralLink ?? "Unlocks after approved investment"}
+            />
+            <Info
+              label="Joined"
+              value={
+                user?.createdAt
+                  ? new Date(user.createdAt).toLocaleDateString("en-PK", { dateStyle: "medium" })
+                  : "-"
+              }
+            />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
 
-        <TabsContent value="kyc">
-          <Card className="glass border-border/40">
-            <CardContent className="p-6 space-y-4">
-              <div className="space-y-2">
-                <Label>CNIC / National ID</Label>
-                <Input placeholder="00000-0000000-0" />
-              </div>
-              <div className="space-y-2">
-                <Label>Upload ID document</Label>
-                <Input type="file" />
-              </div>
-              <Button
-                onClick={() => toast.success("KYC submitted for review")}
-                className="gradient-gold text-gold-foreground"
-              >
-                Submit for verification
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="notif">
-          <Card className="glass border-border/40">
-            <CardContent className="p-6 space-y-5">
-              {[
-                ["Email updates", "Investment & earnings emails"],
-                ["Push notifications", "Real-time activity alerts"],
-                ["Marketing", "New plans and promotions"],
-              ].map(([t, s]) => (
-                <div key={t} className="flex items-center justify-between">
-                  <div>
-                    <div className="font-medium">{t}</div>
-                    <div className="text-sm text-muted-foreground">{s}</div>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+function Info({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-border/40 bg-background/35 p-4">
+      <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{label}</div>
+      <div className="mt-2 text-sm font-semibold capitalize">{value}</div>
     </div>
   );
 }

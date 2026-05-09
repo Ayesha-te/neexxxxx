@@ -1,13 +1,23 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Gift, LayoutDashboard, Layers, Settings, TrendingUp, Users, Wallet } from "lucide-react";
+import {
+  LayoutDashboard,
+  Layers,
+  Settings,
+  TrendingUp,
+  Trophy,
+  Users,
+  Wallet,
+} from "lucide-react";
 import { BrandLockup } from "@/components/BrandLockup";
+import { useAppAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
 const items = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/join", label: "Join Options", icon: Trophy },
   { to: "/plans", label: "Investment Plans", icon: Layers },
   { to: "/earnings", label: "Earning System", icon: TrendingUp },
-  { to: "/rewards", label: "Rewards", icon: Gift },
+  { to: "/rewards", label: "Rewards", icon: Wallet },
   { to: "/referrals", label: "Referrals", icon: Users },
   { to: "/wallet", label: "Wallet", icon: Wallet },
   { to: "/settings", label: "Settings", icon: Settings },
@@ -15,6 +25,7 @@ const items = [
 
 export function AppSidebar() {
   const path = useRouterState({ select: (state) => state.location.pathname });
+  const { user } = useAppAuth();
 
   return (
     <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar p-4 lg:flex">
@@ -48,9 +59,13 @@ export function AppSidebar() {
         })}
       </nav>
       <div className="glass mt-auto rounded-xl p-4">
-        <div className="mb-1 text-xs text-muted-foreground">Current Plan</div>
-        <div className="font-bold text-gradient-gold">Plan 5 - Gold</div>
-        <div className="mt-2 text-xs text-muted-foreground">Upgrade to unlock higher rewards.</div>
+        <div className="mb-1 text-xs text-muted-foreground">Account Type</div>
+        <div className="font-bold text-gradient-gold capitalize">
+          {user?.accountType.replace("_", " ") ?? "Prospect"}
+        </div>
+        <div className="mt-2 text-xs text-muted-foreground">
+          3-level commission chain: 30% / 15% / 5%.
+        </div>
       </div>
     </aside>
   );

@@ -1,197 +1,267 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Coins, Gift, Target, Wallet, type LucideIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 import { pageTitle } from "@/lib/brand";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { ArrowRight, Coins, Gift, TrendingUp, Trophy, Users, type LucideIcon } from "lucide-react";
-import {
-  getLevelBenefit,
-  getMilestoneStatus,
-  levelBenefits,
-  milestoneRewards,
-  totalMilestoneRewards,
-} from "@/lib/rewards-system";
+import { apiRequest, formatCurrency } from "@/lib/api";
+import { useAppAuth } from "@/lib/auth";
+
+type DashboardResponse = {
+  stats: {
+    totalInvestment: number;
+    totalPoints: number;
+    walletBalance: number;
+    availableBalance: number;
+    totalCommissionEarned: number;
+    totalRewardValue: number;
+  };
+  investments: Array<{
+    id: string;
+    status: string;
+    createdAt: string;
+    activatedAt: string | null;
+    plan: {
+      name: string;
+      price: number;
+      points: number;
+    } | null;
+    metrics: {
+      points: number;
+    } | null;
+  }>;
+  rewardProgress: {
+    totalPoints: number;
+    totalClaimedRewardValue: number;
+    nextMilestone: {
+      title: string;
+      pointsRequired: number;
+      rewardAmount: number;
+      remainingPoints: number;
+    } | null;
+  };
+};
+
+type JoinOptionsResponse = {
+  settings: {
+    referralRules: {
+      level1Percent: number;
+      level2Percent: number;
+      level3Percent: number;
+    };
+    withdrawalRules: {
+      minimumAmount: number;
+      taxPercent: number;
+      dailyLimitMin: number;
+      dailyLimitMax: number;
+      processingHoursMin: number;
+      processingHoursMax: number;
+    };
+  };
+};
 
 export const Route = createFileRoute("/_app/earnings")({
   head: () => ({ meta: [{ title: pageTitle("Earning System") }] }),
   component: Earnings,
 });
 
-const currentLevel = 5;
-
 function Earnings() {
-  const currentBenefit = getLevelBenefit(currentLevel);
-  const steps = [
-    {
-      icon: Users,
-      title: "Build your team",
-      description: "Direct invitations unlock stronger bonus percentages as your network grows.",
-      accent: "gradient-primary",
-    },
-    {
-      icon: TrendingUp,
-      title: "Achieve higher levels",
-      description: "Each level increases your direct, indirect, and team earning power.",
-      accent: "gradient-gold",
-    },
-    {
-      icon: Gift,
-      title: "Earn cash rewards",
-      description: "Hit levels 2 to 5 to unlock one-time milestone payouts on top of bonuses.",
-      accent: "bg-success",
-    },
-  ] satisfies {
-    icon: LucideIcon;
-    title: string;
-    description: string;
-    accent: string;
-  }[];
+  const { token } = useAppAuth();
+  const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
+  const [joinData, setJoinData] = useState<JoinOptionsResponse | null>(null);
+
+  useEffect(() => {
+    if (!token) {
+      return;
+    }
+
+    void Promise.all([
+      apiRequest<DashboardResponse>("/user/dashboard", { token }),
+      apiRequest<JoinOptionsResponse>("/user/join-options", { token }),
+    ]).then(([dashboardResponse, joinOptionsResponse]) => {
+      setDashboard(dashboardResponse);
+      setJoinData(joinOptionsResponse);
+    });
+  }, [token]);
+
+  const referralRules = joinData?.settings.referralRules;
+  const withdrawalRules = joinData?.settings.withdrawalRules;
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Earning System</h1>
         <p className="text-muted-foreground">
-          A transparent reward model with rising level bonuses and milestone cash rewards.
+          Approved plans add fixed points, unlock 3-level referral income, and move you toward
+          claimable reward milestones instead of ROI-based returns.
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
         <StatCard
-          icon={Trophy}
-          label="Current level"
-          value={`Level ${currentLevel}`}
-          hint={`Direct bonus ${currentBenefit.directBonus}%`}
+          icon={Wallet}
+          label="Total invested"
+          value={formatCurrency(dashboard?.stats.totalInvestment ?? 0)}
+          hint="Approved plan value"
+        />
+        <StatCard
+          icon={Target}
+          label="Points collected"
+          value={(dashboard?.stats.totalPoints ?? 0).toLocaleString()}
+          hint="From active approved plans"
         />
         <StatCard
           icon={Coins}
-          label="Indirect bonus"
-          value={`${currentBenefit.indirectBonus}%`}
-          hint={`Team bonus ${currentBenefit.teamBonus}%`}
+          label="Referral income"
+          value={formatCurrency(dashboard?.stats.totalCommissionEarned ?? 0)}
+          hint="3-level team commissions"
         />
         <StatCard
           icon={Gift}
-          label="Reward pool"
-          value={`Rs ${totalMilestoneRewards.toLocaleString()}`}
-          hint="Level 2 to 5 one-time cash rewards"
+          label="Available balance"
+          value={formatCurrency(dashboard?.stats.availableBalance ?? 0)}
+          hint="Ready for withdrawal requests"
         />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        {steps.map((step, index) => (
-          <Card key={step.title} className="glass relative overflow-hidden border-border/40">
-            <CardContent className="space-y-3 p-6">
-              <div
-                className={`grid size-12 place-items-center rounded-xl ${step.accent} text-primary-foreground glow`}
-              >
-                <step.icon className="size-6" />
+      <div className="grid gap-6 lg:grid-cols-[1.1fr,0.9fr]">
+        <Card className="glass border-border/40">
+          <CardHeader>
+            <CardTitle>How Your Income Works</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-3 sm:grid-cols-2">
+            <RuleCard
+              label="Plan activation"
+              value="Every approved plan adds fixed points to your account."
+            />
+            <RuleCard
+              label="Team commissions"
+              value={
+                referralRules
+                  ? `${referralRules.level1Percent}% / ${referralRules.level2Percent}% / ${referralRules.level3Percent}% across 3 levels`
+                  : "30% / 15% / 5% across 3 levels"
+              }
+            />
+            <RuleCard
+              label="Reward claims"
+              value={`${formatCurrency(dashboard?.rewardProgress.totalClaimedRewardValue ?? 0)} already claimed into wallet`}
+            />
+            <RuleCard
+              label="Withdrawal rules"
+              value={
+                withdrawalRules
+                  ? `${formatCurrency(withdrawalRules.minimumAmount)} minimum | ${withdrawalRules.taxPercent}% tax | ${withdrawalRules.processingHoursMin}-${withdrawalRules.processingHoursMax} hours`
+                  : "1500 minimum | 10% tax | 24-48 hours"
+              }
+            />
+          </CardContent>
+        </Card>
+
+        <Card className="glass border-border/40">
+          <CardHeader>
+            <CardTitle>Next Reward Target</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {dashboard?.rewardProgress.nextMilestone ? (
+              <>
+                <div className="rounded-2xl border border-border/40 bg-background/35 p-4">
+                  <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                    Next milestone
+                  </div>
+                  <div className="mt-2 text-2xl font-bold">
+                    {dashboard.rewardProgress.nextMilestone.title}
+                  </div>
+                  <div className="mt-2 text-sm text-muted-foreground">
+                    {dashboard.rewardProgress.nextMilestone.pointsRequired.toLocaleString()} points
+                    {" | "}
+                    {formatCurrency(dashboard.rewardProgress.nextMilestone.rewardAmount)}
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-border/40 bg-background/30 p-4">
+                  <div className="text-sm text-muted-foreground">
+                    Remaining points to unlock this rank reward
+                  </div>
+                  <div className="mt-2 text-3xl font-bold">
+                    {dashboard.rewardProgress.nextMilestone.remainingPoints.toLocaleString()}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="rounded-2xl border border-border/40 bg-background/35 p-4 text-sm text-muted-foreground">
+                All configured reward milestones are already unlocked.
               </div>
-              <div className="text-lg font-semibold">{step.title}</div>
-              <div className="text-sm text-muted-foreground">{step.description}</div>
-              {index < 2 ? (
-                <ArrowRight className="absolute right-2 top-1/2 hidden -translate-y-1/2 text-muted-foreground/40 lg:block" />
-              ) : null}
-            </CardContent>
-          </Card>
-        ))}
+            )}
+
+            {withdrawalRules ? (
+              <div className="rounded-2xl border border-border/40 bg-background/30 p-4 text-sm text-muted-foreground">
+                Daily withdrawal range: {formatCurrency(withdrawalRules.dailyLimitMin)} to{" "}
+                {formatCurrency(withdrawalRules.dailyLimitMax)}.
+              </div>
+            ) : null}
+          </CardContent>
+        </Card>
       </div>
 
       <Card className="glass border-border/40">
         <CardHeader>
-          <CardTitle>Level Benefits</CardTitle>
+          <CardTitle>Your Plan Activity</CardTitle>
         </CardHeader>
-        <CardContent className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-border/40 hover:bg-transparent">
-                <TableHead>Level</TableHead>
-                <TableHead className="text-primary">Direct Bonus</TableHead>
-                <TableHead className="text-gold">Indirect Bonus</TableHead>
-                <TableHead className="text-success">Team Bonus</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {levelBenefits.map((benefit) => {
-                const status = getMilestoneStatus(currentLevel, benefit.level);
-                const reached = benefit.level <= currentLevel;
-
-                return (
-                  <TableRow
-                    key={benefit.level}
-                    className={`border-border/30 ${
-                      benefit.level === currentLevel ? "bg-primary/10" : ""
-                    }`}
-                  >
-                    <TableCell className="font-bold">L{benefit.level}</TableCell>
-                    <TableCell>
-                      <Bar pct={benefit.directBonus} color="bg-primary" />
-                    </TableCell>
-                    <TableCell>
-                      <Bar pct={benefit.indirectBonus} color="bg-gold" />
-                    </TableCell>
-                    <TableCell>
-                      <Bar pct={benefit.teamBonus} color="bg-success" />
-                    </TableCell>
-                    <TableCell>
-                      {status === "current" ? (
-                        <span className="rounded-full px-2 py-1 text-xs font-semibold gradient-gold text-gold-foreground">
-                          Current
-                        </span>
-                      ) : reached ? (
-                        <span className="rounded-full bg-success/20 px-2 py-1 text-xs text-success">
-                          Unlocked
-                        </span>
-                      ) : (
-                        <span className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">
-                          Locked
-                        </span>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+        <CardContent className="space-y-4">
+          {dashboard?.investments.length ? (
+            dashboard.investments.map((item) => (
+              <div key={item.id} className="rounded-2xl border border-border/40 bg-background/35 p-5">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <div className="text-lg font-semibold">{item.plan?.name ?? "Plan"}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {item.plan
+                        ? `${formatCurrency(item.plan.price)} | ${item.plan.points} points`
+                        : "Plan details unavailable"}
+                    </div>
+                    <div className="mt-2 text-xs text-muted-foreground">
+                      Submitted{" "}
+                      {new Date(item.createdAt).toLocaleDateString("en-PK", {
+                        dateStyle: "medium",
+                      })}
+                    </div>
+                    {item.activatedAt ? (
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        Activated{" "}
+                        {new Date(item.activatedAt).toLocaleDateString("en-PK", {
+                          dateStyle: "medium",
+                        })}
+                      </div>
+                    ) : null}
+                  </div>
+                  <Badge variant="outline" className="capitalize">
+                    {item.status}
+                  </Badge>
+                </div>
+                <div className="mt-4 grid gap-3 md:grid-cols-3">
+                  <Metric label="Plan points" value={String(item.metrics?.points ?? item.plan?.points ?? 0)} />
+                  <Metric
+                    label="Referral unlock"
+                    value={
+                      referralRules
+                        ? `${referralRules.level1Percent}% / ${referralRules.level2Percent}% / ${referralRules.level3Percent}%`
+                        : "30% / 15% / 5%"
+                    }
+                  />
+                  <Metric
+                    label="Reward impact"
+                    value={`${(item.metrics?.points ?? item.plan?.points ?? 0).toLocaleString()} points added`}
+                  />
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-sm text-muted-foreground">
+              No plan activity yet. Approving a plan is what starts the points and referral-income
+              journey.
+            </div>
+          )}
         </CardContent>
       </Card>
-
-      <div className="grid gap-4 lg:grid-cols-4">
-        {milestoneRewards.map((reward) => {
-          const status = getMilestoneStatus(currentLevel, reward.level);
-
-          return (
-            <Card key={reward.level} className="glass border-border/40">
-              <CardContent className="space-y-2 p-5">
-                <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-                  Level {reward.level}
-                </div>
-                <div className="text-3xl font-bold text-gradient-gold">
-                  Rs {reward.amount.toLocaleString()}
-                </div>
-                <div className="text-sm text-muted-foreground">One-time milestone reward</div>
-                <span
-                  className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                    status === "earned"
-                      ? "bg-success/20 text-success"
-                      : status === "current"
-                        ? "gradient-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground"
-                  }`}
-                >
-                  {status === "earned" ? "Earned" : status === "current" ? "Ready now" : "Locked"}
-                </span>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
     </div>
   );
 }
@@ -223,16 +293,20 @@ function StatCard({
   );
 }
 
-function Bar({ pct, color }: { pct: number; color: string }) {
+function RuleCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center gap-2">
-      <div className="h-1.5 w-20 overflow-hidden rounded-full bg-muted">
-        <div
-          className={`h-full ${color}`}
-          style={{ width: `${Math.max(8, Math.min(100, pct * 2))}%` }}
-        />
-      </div>
-      <span className="w-10 text-sm font-medium">{pct}%</span>
+    <div className="rounded-2xl border border-border/40 bg-background/30 p-4">
+      <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{label}</div>
+      <div className="mt-2 text-sm font-semibold">{value}</div>
+    </div>
+  );
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-border/40 bg-background/30 p-3">
+      <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{label}</div>
+      <div className="mt-1 text-sm font-semibold">{value}</div>
     </div>
   );
 }

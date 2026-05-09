@@ -1,131 +1,221 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { ArrowUpRight, Bell, Coins, Gift, TrendingUp, Users, Wallet } from "lucide-react";
+import { useEffect, useState } from "react";
 import { pageTitle } from "@/lib/brand";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Wallet, TrendingUp, Trophy, Star, Users, ArrowUpRight } from "lucide-react";
-import {
-  Area,
-  AreaChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-} from "recharts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { apiRequest, formatCurrency, type AppUser } from "@/lib/api";
+import { useAppAuth } from "@/lib/auth";
+
+type DashboardResponse = {
+  user: AppUser;
+  stats: {
+    totalInvestment: number;
+    totalPoints: number;
+    walletBalance: number;
+    availableBalance: number;
+    totalCommissionEarned: number;
+    totalRewardValue: number;
+    accountType: string;
+  };
+  investments: Array<{
+    id: string;
+    status: string;
+    plan: {
+      name: string;
+      price: number;
+      points: number;
+    };
+    metrics: {
+      points: number;
+    };
+  }>;
+  referralSummary: {
+    level1: number;
+    level2: number;
+    level3: number;
+  };
+  rewardProgress: {
+    totalPoints: number;
+    totalClaimedRewardValue: number;
+    nextMilestone: {
+      title: string;
+      pointsRequired: number;
+      rewardAmount: number;
+      remainingPoints: number;
+    } | null;
+    claimableMilestones: Array<{
+      title: string;
+      pointsRequired: number;
+      rewardAmount: number;
+    }>;
+  };
+  announcements: Array<{
+    id: string;
+    title: string;
+    message: string;
+  }>;
+  notifications: Array<{
+    id: string;
+    title: string;
+    message: string;
+    createdAt: string;
+  }>;
+  recentTransactions: Array<{
+    id: string;
+    amount: number;
+    direction: "credit" | "debit";
+    type: string;
+    description: string;
+    createdAt: string;
+  }>;
+};
 
 export const Route = createFileRoute("/_app/dashboard")({
   head: () => ({ meta: [{ title: pageTitle("Dashboard") }] }),
   component: Dashboard,
 });
 
-const data = [
-  { d: "Mon", v: 1200 },
-  { d: "Tue", v: 1900 },
-  { d: "Wed", v: 1700 },
-  { d: "Thu", v: 2400 },
-  { d: "Fri", v: 2200 },
-  { d: "Sat", v: 3100 },
-  { d: "Sun", v: 3600 },
-];
-
-const stats = [
-  { label: "Total Investment", value: "₨ 9,500", icon: Wallet, accent: "text-primary" },
-  { label: "Total Earnings", value: "₨ 24,820", icon: TrendingUp, accent: "text-success" },
-  { label: "Current Level", value: "Level 5", icon: Trophy, accent: "text-gold" },
-  { label: "Total Points", value: "63 pts", icon: Star, accent: "text-secondary" },
-];
-
-const breakdown = [
-  { label: "Direct Income (L1)", val: "₨ 14,200", pct: 60, color: "gradient-primary" },
-  { label: "Second Step (L2)", val: "₨ 7,820", pct: 32, color: "gradient-gold" },
-  { label: "Third Step (L3)", val: "₨ 2,800", pct: 8, color: "bg-success" },
-];
-
 function Dashboard() {
+  const { token, user } = useAppAuth();
+  const [data, setData] = useState<DashboardResponse | null>(null);
+
+  useEffect(() => {
+    if (!token) {
+      return;
+    }
+
+    void apiRequest<DashboardResponse>("/user/dashboard", { token }).then(setData);
+  }, [token]);
+
+  const cards = [
+    {
+      label: "Total Investment",
+      value: formatCurrency(data?.stats.totalInvestment ?? 0),
+      icon: Wallet,
+      accent: "text-primary",
+    },
+    {
+      label: "Total Points",
+      value: (data?.stats.totalPoints ?? 0).toLocaleString(),
+      icon: TrendingUp,
+      accent: "text-success",
+    },
+    {
+      label: "Available Balance",
+      value: formatCurrency(data?.stats.availableBalance ?? 0),
+      icon: Gift,
+      accent: "text-gold",
+    },
+    {
+      label: "Referral Income",
+      value: formatCurrency(data?.stats.totalCommissionEarned ?? 0),
+      icon: Coins,
+      accent: "text-secondary",
+    },
+  ];
+
   return (
     <div className="space-y-6">
-      <div className="flex items-end justify-between flex-wrap gap-3">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold">Welcome back, Ali 👋</h1>
-          <p className="text-muted-foreground">Here's how your portfolio is performing today.</p>
+          <h1 className="text-3xl font-bold">Welcome back, {user?.name ?? "Nexo member"}</h1>
+          <p className="text-muted-foreground">
+            Your plans, points, rank rewards, and 3-level network income are all synced from the
+            backend here.
+          </p>
         </div>
-        <Badge className="gradient-gold text-gold-foreground border-0 px-3 py-1.5">
-          Active Plan · Plan 5
+        <Badge className="gradient-gold border-0 px-3 py-1.5 text-gold-foreground capitalize">
+          {(data?.stats.accountType ?? user?.accountType ?? "prospect").replace("_", " ")}
         </Badge>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((s) => (
-          <Card key={s.label} className="glass border-border/40">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {cards.map((card) => (
+          <Card key={card.label} className="glass border-border/40">
             <CardContent className="p-5">
-              <div className="flex items-center justify-between mb-3">
+              <div className="mb-3 flex items-center justify-between">
                 <div
-                  className={`size-10 rounded-xl bg-accent/40 grid place-items-center ${s.accent}`}
+                  className={`grid size-10 place-items-center rounded-xl bg-accent/40 ${card.accent}`}
                 >
-                  <s.icon className="size-5" />
+                  <card.icon className="size-5" />
                 </div>
                 <ArrowUpRight className="size-4 text-success" />
               </div>
-              <div className="text-2xl font-bold">{s.value}</div>
-              <div className="text-xs text-muted-foreground mt-1">{s.label}</div>
+              <div className="text-2xl font-bold">{card.value}</div>
+              <div className="mt-1 text-xs text-muted-foreground">{card.label}</div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        <Card className="glass border-border/40 lg:col-span-2">
+      <div className="grid gap-6 lg:grid-cols-[1.1fr,0.9fr]">
+        <Card className="glass border-border/40">
           <CardHeader>
-            <CardTitle>Earnings Growth</CardTitle>
+            <CardTitle>Approved Plans</CardTitle>
           </CardHeader>
-          <CardContent className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data}>
-                <defs>
-                  <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="oklch(0.62 0.22 285)" stopOpacity={0.7} />
-                    <stop offset="100%" stopColor="oklch(0.62 0.22 285)" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="oklch(1 0 0 / 0.05)" />
-                <XAxis dataKey="d" stroke="oklch(0.72 0.03 280)" fontSize={12} />
-                <YAxis stroke="oklch(0.72 0.03 280)" fontSize={12} />
-                <Tooltip
-                  contentStyle={{
-                    background: "oklch(0.23 0.05 280)",
-                    border: "1px solid oklch(0.32 0.05 280)",
-                    borderRadius: 12,
-                  }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="v"
-                  stroke="oklch(0.83 0.16 85)"
-                  strokeWidth={2.5}
-                  fill="url(#g)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+          <CardContent className="space-y-4">
+            {data?.investments.length ? (
+              data.investments.map((investment) => (
+                <div
+                  key={investment.id}
+                  className="rounded-2xl border border-border/40 bg-background/35 p-4"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <div className="font-semibold">{investment.plan.name}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {formatCurrency(investment.plan.price)} • {investment.plan.points} points
+                      </div>
+                    </div>
+                    <Badge variant="outline" className="capitalize">
+                      {investment.status}
+                    </Badge>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="rounded-2xl border border-dashed border-border/40 p-6 text-sm text-muted-foreground">
+                No approved plan yet. Submit your first investment to start collecting points.
+              </div>
+            )}
           </CardContent>
         </Card>
 
         <Card className="glass border-border/40">
           <CardHeader>
-            <CardTitle>Earnings Breakdown</CardTitle>
+            <CardTitle>Reward Rank Progress</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-5">
-            {breakdown.map((b) => (
-              <div key={b.label}>
-                <div className="flex justify-between text-sm mb-1.5">
-                  <span className="text-muted-foreground">{b.label}</span>
-                  <span className="font-semibold">{b.val}</span>
+          <CardContent className="space-y-4">
+            <div className="rounded-2xl border border-border/40 bg-background/35 p-4">
+              <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                Current points
+              </div>
+              <div className="mt-2 text-4xl font-bold">{data?.rewardProgress.totalPoints ?? 0}</div>
+              <div className="mt-2 text-sm text-muted-foreground">
+                Claimed reward value:{" "}
+                {formatCurrency(data?.rewardProgress.totalClaimedRewardValue ?? 0)}
+              </div>
+            </div>
+            {data?.rewardProgress.nextMilestone ? (
+              <div className="rounded-2xl border border-border/40 bg-background/30 p-4">
+                <div className="font-semibold">{data.rewardProgress.nextMilestone.title}</div>
+                <div className="mt-1 text-sm text-muted-foreground">
+                  {data.rewardProgress.nextMilestone.pointsRequired.toLocaleString()} points for{" "}
+                  {formatCurrency(data.rewardProgress.nextMilestone.rewardAmount)}
                 </div>
-                <div className="h-2 rounded-full bg-muted overflow-hidden">
-                  <div className={`h-full ${b.color}`} style={{ width: `${b.pct}%` }} />
+                <div className="mt-3 text-sm font-medium text-gold">
+                  {data.rewardProgress.nextMilestone.remainingPoints.toLocaleString()} points to go
                 </div>
               </div>
-            ))}
+            ) : (
+              <div className="rounded-2xl border border-border/40 bg-background/30 p-4 text-sm text-muted-foreground">
+                All configured milestones have already been claimed.
+              </div>
+            )}
+            <div className="rounded-2xl border border-border/40 bg-background/30 p-4 text-sm text-muted-foreground">
+              Claimable milestones right now: {data?.rewardProgress.claimableMilestones.length ?? 0}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -138,32 +228,119 @@ function Dashboard() {
         </CardHeader>
         <CardContent className="grid grid-cols-3 gap-4">
           {[
-            { l: "Level 1", n: 12, t: "Direct" },
-            { l: "Level 2", n: 38, t: "Second step" },
-            { l: "Level 3", n: 96, t: "Third step" },
-          ].map((r) => (
-            <div key={r.l} className="rounded-xl glass p-5 text-center">
-              <div className="text-xs text-muted-foreground">{r.l}</div>
-              <div className="text-3xl font-bold text-gradient mt-1">{r.n}</div>
-              <div className="text-xs text-muted-foreground mt-1">{r.t}</div>
+            {
+              label: "Level 1",
+              count: data?.referralSummary.level1 ?? 0,
+              type: "30% commission",
+            },
+            {
+              label: "Level 2",
+              count: data?.referralSummary.level2 ?? 0,
+              type: "15% commission",
+            },
+            {
+              label: "Level 3",
+              count: data?.referralSummary.level3 ?? 0,
+              type: "5% commission",
+            },
+          ].map((item) => (
+            <div key={item.label} className="rounded-xl glass p-5 text-center">
+              <div className="text-xs text-muted-foreground">{item.label}</div>
+              <div className="mt-1 text-3xl font-bold text-gradient">{item.count}</div>
+              <div className="mt-1 text-xs text-muted-foreground">{item.type}</div>
             </div>
           ))}
         </CardContent>
       </Card>
 
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="glass border-border/40">
+          <CardHeader>
+            <CardTitle>Recent Wallet Activity</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {data?.recentTransactions.length ? (
+              data.recentTransactions.map((transaction) => (
+                <div
+                  key={transaction.id}
+                  className="rounded-2xl border border-border/40 bg-background/35 p-4"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <div className="font-semibold">{transaction.description}</div>
+                      <div className="mt-2 text-xs text-muted-foreground">
+                        {new Date(transaction.createdAt).toLocaleString("en-PK", {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        })}
+                      </div>
+                    </div>
+                    <div
+                      className={`text-lg font-bold ${
+                        transaction.direction === "debit" ? "text-destructive" : "text-success"
+                      }`}
+                    >
+                      {transaction.direction === "debit" ? "-" : "+"}
+                      {formatCurrency(transaction.amount)}
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-sm text-muted-foreground">No wallet activity yet.</div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="glass border-border/40">
+          <CardHeader>
+            <CardTitle>Announcements</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {data?.announcements.length ? (
+              data.announcements.map((announcement) => (
+                <div
+                  key={announcement.id}
+                  className="rounded-2xl border border-border/40 bg-background/35 p-4"
+                >
+                  <div className="font-semibold">{announcement.title}</div>
+                  <div className="mt-2 text-sm text-muted-foreground">{announcement.message}</div>
+                </div>
+              ))
+            ) : (
+              <div className="text-sm text-muted-foreground">No announcements right now.</div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
       <Card className="glass border-border/40">
         <CardHeader>
-          <CardTitle>Progress to next level</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Bell className="size-5" />
+            Recent Notifications
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex justify-between text-sm mb-2">
-            <span>Level 5 → Level 6</span>
-            <span className="text-gold font-semibold">63 / 100 pts</span>
-          </div>
-          <Progress value={63} className="h-3" />
-          <p className="text-xs text-muted-foreground mt-3">
-            Earn 37 more points to unlock Level 6 and a ₨ 35,000 reward.
-          </p>
+        <CardContent className="space-y-3">
+          {data?.notifications.length ? (
+            data.notifications.map((notification) => (
+              <div
+                key={notification.id}
+                className="rounded-2xl border border-border/40 bg-background/35 p-4"
+              >
+                <div className="font-semibold">{notification.title}</div>
+                <div className="mt-2 text-sm text-muted-foreground">{notification.message}</div>
+                <div className="mt-2 text-xs text-muted-foreground">
+                  {new Date(notification.createdAt).toLocaleString("en-PK", {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  })}
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-sm text-muted-foreground">No notifications yet.</div>
+          )}
         </CardContent>
       </Card>
     </div>
