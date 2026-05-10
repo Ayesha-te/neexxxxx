@@ -1,8 +1,6 @@
-// Hardcode the deployed backend so GitHub builds do not depend on env vars.
-export const API_BASE_URL = "https://nexobackend3.vercel.app/api".replace(
-  /\/+$/,
-  "",
-);
+const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
+
+export const API_BASE_URL = (configuredApiBaseUrl ?? "/api").replace(/\/+$/, "");
 
 export class ApiError extends Error {
   status: number;
@@ -88,14 +86,15 @@ export async function apiRequest<T>(
   },
 ) {
   const isFormData = typeof FormData !== "undefined" && options?.body instanceof FormData;
+  const hasBody = options?.body !== undefined && options?.body !== null;
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method: options?.method ?? "GET",
     headers: {
       ...(options?.token ? { Authorization: `Bearer ${options.token}` } : {}),
-      ...(isFormData ? {} : { "Content-Type": "application/json" }),
+      ...(hasBody && !isFormData ? { "Content-Type": "application/json" } : {}),
     },
-    body: options?.body
+    body: hasBody
       ? isFormData
         ? (options.body as FormData)
         : JSON.stringify(options.body)
