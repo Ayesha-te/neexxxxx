@@ -28,6 +28,14 @@ function SettingsPage() {
     message: "",
   });
   const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const initials = (user?.name ?? "NX")
+    .split(" ")
+    .map((part) => part[0] ?? "")
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   useEffect(() => {
     setForm({
@@ -58,12 +66,7 @@ function SettingsPage() {
             <div className="flex items-center gap-4">
               <Avatar className="size-20 ring-2 ring-gold/40">
                 <AvatarFallback className="gradient-primary text-xl text-primary-foreground">
-                  {user?.name
-                    .split(" ")
-                    .map((part) => part[0])
-                    .join("")
-                    .slice(0, 2)
-                    .toUpperCase() ?? "NX"}
+                  {initials}
                 </AvatarFallback>
               </Avatar>
               <div>
