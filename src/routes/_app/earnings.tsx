@@ -139,7 +139,7 @@ function Earnings() {
               value={
                 referralRules
                   ? `${referralRules.level1Percent}% / ${referralRules.level2Percent}% / ${referralRules.level3Percent}% across 3 levels`
-                  : "30% / 15% / 5% across 3 levels"
+                  : "48% / 18% / 10% across 3 levels"
               }
             />
             <RuleCard
@@ -151,7 +151,7 @@ function Earnings() {
               value={
                 withdrawalRules
                   ? `${formatCurrency(withdrawalRules.minimumAmount)} minimum | ${withdrawalRules.taxPercent}% tax | ${withdrawalRules.processingHoursMin}-${withdrawalRules.processingHoursMax} hours`
-                  : "1500 minimum | 10% tax | 24-48 hours"
+                    : "1000 minimum | 10% tax | 24-48 hours"
               }
             />
           </CardContent>
@@ -245,9 +245,9 @@ function Earnings() {
                   <Metric
                     label="Referral unlock"
                     value={
-                      referralRules
+                        referralRules
                         ? `${referralRules.level1Percent}% / ${referralRules.level2Percent}% / ${referralRules.level3Percent}%`
-                        : "30% / 15% / 5%"
+                        : "48% / 18% / 10%"
                     }
                   />
                   <Metric

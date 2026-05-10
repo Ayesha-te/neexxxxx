@@ -99,8 +99,8 @@ function Landing() {
               Build your team and grow with <span className="text-gradient">{BRAND_NAME}</span>.
             </h1>
             <p className="mt-6 max-w-2xl text-lg text-muted-foreground lg:max-w-xl">
-              Start from Rs 500 to Rs 10,000, earn 30% / 15% / 5% across 3 levels, collect points,
-              unlock rank rewards up to Rs 18,000, and withdraw with simple platform rules.
+              Start from Rs. 1,000 to Rs. 10,000, earn 48% / 18% / 10% across 3 levels, collect points,
+              unlock rank rewards up to Rs 35,000, and withdraw with simple platform rules.
             </p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
               <Link to="/signup">
@@ -125,13 +125,13 @@ function Landing() {
               {[
                 {
                   icon: TrendingUp,
-                  title: "5 Fixed Plans",
-                  subtitle: "Rs 500, 1500, 3000, 6000, and 10000",
+                  title: "7 Fixed Plans",
+                  subtitle: "Rs 1,000, 2,000, 4,000, 6,500, 9,500, 12,000, 15,000",
                 },
                 {
                   icon: Users,
-                  title: "50% Team Income",
-                  subtitle: "30% + 15% + 5% across three levels",
+                  title: "Team Income",
+                  subtitle: "48% + 18% + 10% across three levels",
                 },
                 {
                   icon: ShieldCheck,

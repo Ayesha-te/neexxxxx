@@ -66,7 +66,7 @@ export function AppSidebar() {
           {user?.accountType.replace("_", " ") ?? "Prospect"}
         </div>
         <div className="mt-2 text-xs text-muted-foreground">
-          3-level commission chain: 30% / 15% / 5%.
+          3-level commission chain: 48% / 18% / 10%.
         </div>
       </div>
     </aside>

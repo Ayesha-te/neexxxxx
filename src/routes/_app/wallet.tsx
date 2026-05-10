@@ -205,7 +205,7 @@ function WalletPage() {
                   max={Math.min(data?.availableBalance ?? 0, dailyRemaining)}
                   value={amount}
                   onChange={(event) => setAmount(event.target.value)}
-                  placeholder="1500"
+                  placeholder="1000"
                   required
                 />
               </div>

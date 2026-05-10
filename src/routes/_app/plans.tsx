@@ -196,9 +196,9 @@ function Plans() {
             <div className="mt-2 text-sm text-muted-foreground">
               {selectedPlan
                 ? `${formatCurrency(selectedPlan.price)} | ${selectedPlan.points} points | ${
-                    joinData
-                      ? `${joinData.settings.referralRules.level1Percent}% / ${joinData.settings.referralRules.level2Percent}% / ${joinData.settings.referralRules.level3Percent}%`
-                      : "30% / 15% / 5%"
+                      joinData
+                        ? `${joinData.settings.referralRules.level1Percent}% / ${joinData.settings.referralRules.level2Percent}% / ${joinData.settings.referralRules.level3Percent}%`
+                        : "48% / 18% / 10%"
                   } team income`
                 : "Choose a plan card first. The plan will only start after admin verifies your deposit."}
             </div>
@@ -214,7 +214,7 @@ function Plans() {
               Referral structure:{" "}
               {joinData
                 ? `${joinData.settings.referralRules.level1Percent}% / ${joinData.settings.referralRules.level2Percent}% / ${joinData.settings.referralRules.level3Percent}%`
-                : "30% / 15% / 5%"}
+                : "48% / 18% / 10%"}
             </div>
           </div>
 

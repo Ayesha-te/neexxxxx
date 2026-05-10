@@ -1,11 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Phone, Mail, MapPin, Send } from "lucide-react";
 import { pageTitle } from "@/lib/brand";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { apiRequest, type AppUser } from "@/lib/api";
 import { useAppAuth } from "@/lib/auth";
@@ -21,12 +23,20 @@ function SettingsPage() {
     name: user?.name ?? "",
     phone: user?.phone ?? "",
   });
-  const [saving, setSaving] = useState(false);
+  const [feedbackForm, setFeedbackForm] = useState({
+    name: user?.name ?? "",
+    message: "",
+  });
+  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
 
   useEffect(() => {
     setForm({
       name: user?.name ?? "",
       phone: user?.phone ?? "",
+    });
+    setFeedbackForm({
+      name: user?.name ?? "",
+      message: "",
     });
   }, [user?.name, user?.phone]);
 
@@ -140,6 +150,127 @@ function SettingsPage() {
             />
           </CardContent>
         </Card>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Contact Us Section */}
+        <Card className="glass border-border/40">
+          <CardHeader>
+            <CardTitle>Contact Us</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <ContactInfo
+              icon={Phone}
+              label="Phone"
+              value="03448252109"
+            />
+            <ContactInfo
+              icon={Phone}
+              label="Phone"
+              value="03057410110"
+            />
+            <ContactInfo
+              icon={Mail}
+              label="Email"
+              value="sardarlaeiq786@gmail.com"
+            />
+            <ContactInfo
+              icon={MapPin}
+              label="Location"
+              value="Sargodha"
+            />
+          </CardContent>
+        </Card>
+
+        {/* Feedback & Complaints Section */}
+        <Card className="glass border-border/40">
+          <CardHeader>
+            <CardTitle>Feedback & Complaints</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form
+              className="space-y-4"
+              onSubmit={async (event) => {
+                event.preventDefault();
+                if (!token || !feedbackForm.message.trim()) {
+                  toast.error("Please write your feedback or complaint.");
+                  return;
+                }
+
+                setFeedbackSubmitting(true);
+                try {
+                  await apiRequest("/user/feedback", {
+                    method: "POST",
+                    token,
+                    body: {
+                      name: feedbackForm.name.trim(),
+                      message: feedbackForm.message.trim(),
+                    },
+                  });
+                  toast.success("Thank you! Your feedback has been sent successfully.");
+                  setFeedbackForm({
+                    name: user?.name ?? "",
+                    message: "",
+                  });
+                } catch (error) {
+                  toast.error(error instanceof Error ? error.message : "Unable to submit feedback.");
+                } finally {
+                  setFeedbackSubmitting(false);
+                }
+              }}
+            >
+              <div className="space-y-2">
+                <Label>Your Name</Label>
+                <Input
+                  value={feedbackForm.name}
+                  onChange={(event) =>
+                    setFeedbackForm((current) => ({ ...current, name: event.target.value }))
+                  }
+                  placeholder="Enter your name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Message</Label>
+                <Textarea
+                  value={feedbackForm.message}
+                  onChange={(event) =>
+                    setFeedbackForm((current) => ({ ...current, message: event.target.value }))
+                  }
+                  placeholder="Write your feedback or complaint"
+                  className="min-h-32"
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={feedbackSubmitting}
+                className="gradient-primary text-primary-foreground w-full"
+              >
+                <Send className="mr-2 h-4 w-4" />
+                {feedbackSubmitting ? "Submitting..." : "Submit Feedback"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+function ContactInfo({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof Phone;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-start gap-3 rounded-lg border border-border/40 bg-background/35 p-3">
+      <Icon className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+      <div className="flex-1 min-w-0">
+        <div className="text-xs uppercase tracking-[0.1em] text-muted-foreground">{label}</div>
+        <div className="mt-1 text-sm font-semibold break-all">{value}</div>
       </div>
     </div>
   );
