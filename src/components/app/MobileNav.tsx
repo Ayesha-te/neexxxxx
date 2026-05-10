@@ -1,10 +1,11 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Layers, Trophy, Users, Wallet } from "lucide-react";
+import { LayoutDashboard, Layers, Ticket, Trophy, Users, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
   { to: "/dashboard", label: "Home", icon: LayoutDashboard },
   { to: "/plans", label: "Plans", icon: Layers },
+  { to: "/lucky-draw", label: "Draw", icon: Ticket },
   { to: "/rewards", label: "Ranks", icon: Trophy },
   { to: "/referrals", label: "Refer", icon: Users },
   { to: "/wallet", label: "Wallet", icon: Wallet },
@@ -13,7 +14,7 @@ const items = [
 export function MobileNav() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   return (
-    <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 glass border-t border-border/50 px-2 py-2 grid grid-cols-5">
+    <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 glass border-t border-border/50 px-2 py-2 grid grid-cols-6">
       {items.map((it) => {
         const Icon = it.icon;
         const active = path === it.to;

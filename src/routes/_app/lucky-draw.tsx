@@ -7,6 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { apiRequest, formatCurrency } from "@/lib/api";
 import { useAppAuth } from "@/lib/auth";
 
@@ -47,6 +54,10 @@ function LuckyDrawPage() {
   const [proofNote, setProofNote] = useState("");
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [previewProof, setPreviewProof] = useState<{
+    url: string;
+    fileName: string | null;
+  } | null>(null);
   const proofFileInputRef = useRef<HTMLInputElement | null>(null);
 
   const loadData = async () => {
@@ -62,13 +73,18 @@ function LuckyDrawPage() {
     void loadData();
   }, [token]);
 
+  const isPreviewableImage = (entry: LuckyDrawResponse["items"][number]) => {
+    const source = entry.payment?.proofOriginalFileName ?? entry.payment?.proofFileUrl ?? "";
+    return /\.(png|jpe?g|webp|gif|bmp|avif)$/i.test(source);
+  };
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Lucky Draw</h1>
         <p className="text-muted-foreground">
-          Every approved payment creates one ticket. Re-entry always needs a fresh payment and gets
-          a brand-new ticket ID.
+          Submit a Rs 500 entry request with payment proof. Once admin approves it, one unique
+          ticket is reserved for your account.
         </p>
       </div>
 
@@ -83,6 +99,14 @@ function LuckyDrawPage() {
                 <div className="text-3xl font-bold">{data.activeDraw.title}</div>
                 <div className="text-sm text-muted-foreground">
                   Entry fee: {formatCurrency(data.activeDraw.entryFee)}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="outline" className="border-gold/40 bg-gold/10 text-gold">
+                    Rs 500 entry
+                  </Badge>
+                  <Badge variant="outline" className="border-border/60 bg-background/50">
+                    Admin approval required
+                  </Badge>
                 </div>
                 <div className="text-sm text-muted-foreground">
                   Draw date:{" "}
@@ -107,7 +131,7 @@ function LuckyDrawPage() {
 
         <Card className="glass border-border/40">
           <CardHeader>
-            <CardTitle>Submit Lucky Draw Payment</CardTitle>
+            <CardTitle>Submit Rs 500 Entry</CardTitle>
           </CardHeader>
           <CardContent>
             <form
@@ -187,7 +211,7 @@ function LuckyDrawPage() {
                 disabled={submitting || !data?.activeDraw}
                 className="gradient-gold text-gold-foreground"
               >
-                {submitting ? "Submitting..." : "Create entry"}
+                {submitting ? "Submitting..." : "Submit 500 entry"}
               </Button>
             </form>
           </CardContent>
@@ -213,14 +237,18 @@ function LuckyDrawPage() {
                       })}
                     </div>
                     {entry.payment?.proofFileUrl ? (
-                      <a
-                        href={entry.payment.proofFileUrl}
-                        target="_blank"
-                        rel="noreferrer"
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setPreviewProof({
+                            url: entry.payment.proofFileUrl,
+                            fileName: entry.payment.proofOriginalFileName,
+                          })
+                        }
                         className="mt-2 inline-flex text-xs font-medium text-primary hover:underline"
                       >
                         View uploaded proof
-                      </a>
+                      </button>
                     ) : null}
                   </div>
                   <div className="flex items-center gap-3">
@@ -240,6 +268,55 @@ function LuckyDrawPage() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={Boolean(previewProof)} onOpenChange={(open) => !open && setPreviewProof(null)}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Uploaded Proof</DialogTitle>
+            <DialogDescription>
+              {previewProof?.fileName ?? "Payment proof attached to this lucky draw entry."}
+            </DialogDescription>
+          </DialogHeader>
+          {previewProof ? (
+            isPreviewableImage({
+              id: "",
+              ticketId: "",
+              status: "",
+              rewardAmount: 0,
+              createdAt: "",
+              payment: {
+                status: "",
+                manualTransactionId: "",
+                proofNote: "",
+                proofFileUrl: previewProof.url,
+                proofOriginalFileName: previewProof.fileName,
+              },
+            }) ? (
+              <div className="overflow-hidden rounded-xl border border-border/40 bg-background">
+                <img
+                  src={previewProof.url}
+                  alt={previewProof.fileName ?? "Uploaded proof"}
+                  className="max-h-[70vh] w-full object-contain"
+                />
+              </div>
+            ) : (
+              <div className="rounded-xl border border-border/40 bg-background p-4 text-sm text-muted-foreground">
+                This proof is not an image file. Use the button below to open it in a new tab.
+                <div className="mt-4">
+                  <a
+                    href={previewProof.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+                  >
+                    Open file
+                  </a>
+                </div>
+              </div>
+            )
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
