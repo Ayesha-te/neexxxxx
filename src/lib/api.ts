@@ -1,6 +1,8 @@
 const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
 
-export const API_BASE_URL = (configuredApiBaseUrl ?? "/api").replace(/\/+$/, "");
+export const API_BASE_URL = (
+  configuredApiBaseUrl ?? "https://nexobackend3.vercel.app/api"
+).replace(/\/+$/, "");
 
 export class ApiError extends Error {
   status: number;
