@@ -60,6 +60,22 @@ type JoinOptionsResponse = {
   };
 };
 
+type ReferralRankResponse = {
+  totalPoints: number;
+  tier: {
+    title: string;
+    pointsRequired: number;
+    directPercent: number;
+    indirectPercent: number;
+    teamPercent: number;
+  } | null;
+  percents: {
+    direct: number;
+    indirect: number;
+    team: number;
+  };
+};
+
 export const Route = createFileRoute("/_app/earnings")({
   head: () => ({ meta: [{ title: pageTitle("Earning System") }] }),
   component: Earnings,
@@ -69,6 +85,7 @@ function Earnings() {
   const { token } = useAppAuth();
   const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
   const [joinData, setJoinData] = useState<JoinOptionsResponse | null>(null);
+  const [referralRank, setReferralRank] = useState<ReferralRankResponse | null>(null);
 
   useEffect(() => {
     if (!token) {
@@ -78,9 +95,11 @@ function Earnings() {
     void Promise.all([
       apiRequest<DashboardResponse>("/user/dashboard", { token }),
       apiRequest<JoinOptionsResponse>("/user/join-options", { token }),
-    ]).then(([dashboardResponse, joinOptionsResponse]) => {
+      apiRequest<ReferralRankResponse>("/user/referral-rank", { token }),
+    ]).then(([dashboardResponse, joinOptionsResponse, rankResponse]) => {
       setDashboard(dashboardResponse);
       setJoinData(joinOptionsResponse);
+      setReferralRank(rankResponse);
     });
   }, [token]);
 
@@ -140,6 +159,14 @@ function Earnings() {
                 referralRules
                   ? `${referralRules.level1Percent}% / ${referralRules.level2Percent}% / ${referralRules.level3Percent}% across 3 levels`
                   : "48% / 18% / 10% across 3 levels"
+              }
+            />
+            <RuleCard
+              label="Your referral rank"
+              value={
+                referralRank?.tier
+                  ? `${referralRank.tier.title} • ${referralRank.totalPoints.toLocaleString()} points`
+                  : `${(referralRank?.totalPoints ?? 0).toLocaleString()} points • Starter`
               }
             />
             <RuleCard
@@ -245,9 +272,11 @@ function Earnings() {
                   <Metric
                     label="Referral unlock"
                     value={
-                        referralRules
-                        ? `${referralRules.level1Percent}% / ${referralRules.level2Percent}% / ${referralRules.level3Percent}%`
-                        : "48% / 18% / 10%"
+                      referralRank?.percents
+                        ? `${referralRank.percents.direct}% / ${referralRank.percents.indirect}% / ${referralRank.percents.team}%`
+                        : referralRules
+                          ? `${referralRules.level1Percent}% / ${referralRules.level2Percent}% / ${referralRules.level3Percent}%`
+                            : "48% / 18% / 10%"
                     }
                   />
                   <Metric

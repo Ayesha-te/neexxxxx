@@ -107,6 +107,8 @@ function Rewards() {
               <div className="flex items-center gap-3">
                 {milestone.claimed ? (
                   <Badge className="gradient-gold border-0 text-gold-foreground">Claimed</Badge>
+                ) : milestone.rewardAmount === 0 ? (
+                  <Badge variant="outline">Unlocked</Badge>
                 ) : milestone.claimable ? (
                   <Button
                     disabled={claimingPoints === milestone.pointsRequired}

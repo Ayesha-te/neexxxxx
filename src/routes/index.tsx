@@ -24,6 +24,7 @@ function Landing() {
 
   const navLinks = [
     { label: "Plans", to: "/plans" as const },
+    { label: "Courses", to: "/courses" as const },
     { label: "Earnings", to: "/earnings" as const },
     { label: "Rewards", to: "/rewards" as const },
     { label: "Referrals", to: "/referrals" as const },
@@ -100,7 +101,7 @@ function Landing() {
             </h1>
             <p className="mt-6 max-w-2xl text-lg text-muted-foreground lg:max-w-xl">
               Start from Rs. 1,000 to Rs. 15,000, earn 48% / 18% / 10% across 3 levels, collect points,
-              unlock rank rewards up to Rs 35,000, and withdraw with simple platform rules.
+              unlock rank rewards up to Rs 35,000, and withdraw from Rs 1,000 with simple platform rules.
             </p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
               <Link to="/signup">
@@ -136,7 +137,7 @@ function Landing() {
                 {
                   icon: ShieldCheck,
                   title: "Rank Rewards",
-                  subtitle: "Milestones from 1,000 to 100,000 points",
+                  subtitle: "Five ranks from a 30-point starter to Rs 35,000",
                 },
               ].map((feature) => (
                 <div key={feature.subtitle} className="glass rounded-2xl p-5 text-left">
@@ -180,7 +181,7 @@ function Landing() {
 
         <div className="mx-auto mt-16 grid max-w-4xl gap-4 sm:grid-cols-3">
           {[
-            { icon: TrendingUp, title: "Rs 18,000", subtitle: "Top reward milestone" },
+            { icon: TrendingUp, title: "Rs 35,000", subtitle: "Top reward milestone" },
             { icon: Users, title: "3 Levels", subtitle: "Referral commission system" },
             { icon: ShieldCheck, title: "24-48 Hours", subtitle: "Withdrawal processing time" },
           ].map((feature) => (

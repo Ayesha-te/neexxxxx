@@ -1,29 +1,8 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import {
-  LayoutDashboard,
-  Layers,
-  Settings,
-  TrendingUp,
-  Ticket,
-  Trophy,
-  Users,
-  Wallet,
-} from "lucide-react";
 import { BrandLockup } from "@/components/BrandLockup";
+import { appNavItems } from "@/components/app/appNavItems";
 import { useAppAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
-
-const items = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/join", label: "Join Options", icon: Trophy },
-  { to: "/plans", label: "Investment Plans", icon: Layers },
-  { to: "/lucky-draw", label: "Lucky Draw", icon: Ticket },
-  { to: "/earnings", label: "Earning System", icon: TrendingUp },
-  { to: "/rewards", label: "Rewards", icon: Wallet },
-  { to: "/referrals", label: "Referrals", icon: Users },
-  { to: "/wallet", label: "Wallet", icon: Wallet },
-  { to: "/settings", label: "Settings", icon: Settings },
-] as const;
 
 export function AppSidebar() {
   const path = useRouterState({ select: (state) => state.location.pathname });
@@ -39,7 +18,7 @@ export function AppSidebar() {
         />
       </Link>
       <nav className="flex flex-col gap-1">
-        {items.map((item) => {
+        {appNavItems.map((item) => {
           const active = path === item.to;
           const Icon = item.icon;
 

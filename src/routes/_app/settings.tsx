@@ -12,6 +12,17 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { apiRequest, type AppUser } from "@/lib/api";
 import { useAppAuth } from "@/lib/auth";
 
+type SiteInfoResponse = {
+  platformName: string;
+  supportEmail: string;
+  contactDetails: {
+    phone1: string;
+    phone2: string;
+    email: string;
+    location: string;
+  };
+};
+
 export const Route = createFileRoute("/_app/settings")({
   head: () => ({ meta: [{ title: pageTitle("Settings") }] }),
   component: SettingsPage,
@@ -19,6 +30,7 @@ export const Route = createFileRoute("/_app/settings")({
 
 function SettingsPage() {
   const { user, token, refresh } = useAppAuth();
+  const [siteInfo, setSiteInfo] = useState<SiteInfoResponse | null>(null);
   const [form, setForm] = useState({
     name: user?.name ?? "",
     phone: user?.phone ?? "",
@@ -38,6 +50,7 @@ function SettingsPage() {
     .toUpperCase();
 
   useEffect(() => {
+    void apiRequest<SiteInfoResponse>("/public/site-info").then(setSiteInfo).catch(() => null);
     setForm({
       name: user?.name ?? "",
       phone: user?.phone ?? "",
@@ -165,22 +178,22 @@ function SettingsPage() {
             <ContactInfo
               icon={Phone}
               label="Phone"
-              value="03448252109"
+              value={siteInfo?.contactDetails.phone1 ?? "03448252109"}
             />
             <ContactInfo
               icon={Phone}
               label="Phone"
-              value="03057410110"
+              value={siteInfo?.contactDetails.phone2 ?? "03057410110"}
             />
             <ContactInfo
               icon={Mail}
               label="Email"
-              value="sardarlaeiq786@gmail.com"
+              value={siteInfo?.contactDetails.email ?? "sardarlaeiq786@gmail.com"}
             />
             <ContactInfo
               icon={MapPin}
               label="Location"
-              value="Sargodha"
+              value={siteInfo?.contactDetails.location ?? "Sargodha"}
             />
           </CardContent>
         </Card>

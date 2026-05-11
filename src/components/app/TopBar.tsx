@@ -1,12 +1,25 @@
 import { Bell, Menu, Moon, Search, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
+import { appNavItems } from "@/components/app/appNavItems";
 import { useAppAuth } from "@/lib/auth";
+import { cn } from "@/lib/utils";
 
 export function TopBar() {
   const [dark, setDark] = useState(false);
+  const path = useRouterState({ select: (state) => state.location.pathname });
   const { user, logout } = useAppAuth();
 
   useEffect(() => {
@@ -15,9 +28,47 @@ export function TopBar() {
 
   return (
     <header className="sticky top-0 z-30 glass border-b border-border/50 px-4 py-3 lg:px-8 flex items-center gap-3">
-      <Button variant="ghost" size="icon" className="lg:hidden">
-        <Menu className="size-5" />
-      </Button>
+      <Drawer>
+        <DrawerTrigger asChild>
+          <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open navigation menu">
+            <Menu className="size-5" />
+          </Button>
+        </DrawerTrigger>
+        <DrawerContent className="max-h-[85vh] px-4 pb-6">
+          <DrawerHeader className="px-0 text-left">
+            <DrawerTitle>Navigation</DrawerTitle>
+            <DrawerDescription>Jump to any part of the workspace.</DrawerDescription>
+          </DrawerHeader>
+          <nav className="mt-2 grid gap-2 overflow-y-auto pb-2">
+            {appNavItems.map((item) => {
+              const Icon = item.icon;
+              const active = path === item.to;
+
+              return (
+                <DrawerClose key={item.to} asChild>
+                  <Link
+                    to={item.to}
+                    className={cn(
+                      "flex items-center gap-3 rounded-xl border px-3 py-3 text-sm font-medium transition-colors",
+                      active
+                        ? "border-primary/50 bg-primary/10 text-primary"
+                        : "border-border/60 bg-background/60 text-foreground hover:bg-accent",
+                    )}
+                  >
+                    <Icon className="size-4 shrink-0" />
+                    <span>{item.label}</span>
+                  </Link>
+                </DrawerClose>
+              );
+            })}
+          </nav>
+          <div className="mt-4 flex flex-col gap-2 border-t border-border/60 pt-4">
+            <Button variant="outline" onClick={logout} className="justify-start">
+              Logout
+            </Button>
+          </div>
+        </DrawerContent>
+      </Drawer>
       <div className="relative flex-1 max-w-md">
         <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input

@@ -1,9 +1,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, BookOpen, Check } from "lucide-react";
+import { ArrowLeft, BookOpen, Check, Phone, Mail, MapPin } from "lucide-react";
+import { useEffect, useState } from "react";
 import { BrandLockup } from "@/components/BrandLockup";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { apiRequest } from "@/lib/api";
 import { courses, totalCourses } from "@/lib/courses";
+
+type SiteInfoResponse = {
+  platformName: string;
+  supportEmail: string;
+  contactDetails: {
+    phone1: string;
+    phone2: string;
+    email: string;
+    location: string;
+  };
+};
 
 export const Route = createFileRoute("/courses")({
   head: () => ({ meta: [{ title: "All Courses - Nexo Women Empowerment" }] }),
@@ -11,6 +24,12 @@ export const Route = createFileRoute("/courses")({
 });
 
 function CoursesPage() {
+  const [siteInfo, setSiteInfo] = useState<SiteInfoResponse | null>(null);
+
+  useEffect(() => {
+    void apiRequest<SiteInfoResponse>("/public/site-info").then(setSiteInfo).catch(() => null);
+  }, []);
+
   return (
     <div className="min-h-screen gradient-hero">
       {/* Header */}
@@ -42,6 +61,18 @@ function CoursesPage() {
             Skill-Based Courses, and Islamic Development.
           </p>
         </div>
+
+        <Card className="glass border-border/40 mb-10">
+          <CardHeader>
+            <CardTitle>Contact Admin for Course Help</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <Info label="Phone 1" value={siteInfo?.contactDetails.phone1 ?? "03448252109"} icon={Phone} />
+            <Info label="Phone 2" value={siteInfo?.contactDetails.phone2 ?? "03057410110"} icon={Phone} />
+            <Info label="Email" value={siteInfo?.contactDetails.email ?? "sardarlaeiq786@gmail.com"} icon={Mail} />
+            <Info label="Location" value={siteInfo?.contactDetails.location ?? "Sargodha"} icon={MapPin} />
+          </CardContent>
+        </Card>
 
         {/* Courses Grid */}
         <div className="grid gap-8">
@@ -110,6 +141,11 @@ function CoursesPage() {
                   Enroll Now
                 </Button>
               </Link>
+              <a href={`mailto:${siteInfo?.contactDetails.email ?? "sardarlaeiq786@gmail.com"}`}>
+                <Button size="lg" variant="outline">
+                  Contact Admin
+                </Button>
+              </a>
               <Link to="/">
                 <Button size="lg" variant="outline">
                   Back to Home
@@ -119,6 +155,20 @@ function CoursesPage() {
           </div>
         </div>
       </section>
+    </div>
+  );
+}
+
+function Info({ label, value, icon: Icon }: { label: string; value: string; icon: typeof Phone }) {
+  return (
+    <div className="rounded-2xl border border-border/40 bg-background/30 p-4 flex items-start gap-3">
+      <div className="grid size-10 place-items-center rounded-xl bg-primary/15 text-primary">
+        <Icon className="size-5" />
+      </div>
+      <div>
+        <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{label}</div>
+        <div className="mt-1 text-sm font-semibold break-all">{value}</div>
+      </div>
     </div>
   );
 }
