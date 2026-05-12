@@ -100,8 +100,11 @@ function Landing() {
               Build your team and grow with <span className="text-gradient">{BRAND_NAME}</span>.
             </h1>
             <p className="mt-6 max-w-2xl text-lg text-muted-foreground lg:max-w-xl">
-              Start from Rs. 1,000 to Rs. 15,000, earn 48% / 18% / 10% across 3 levels, collect points,
+              Start from Rs. 1,000 to Rs. 15,000, earn 48% / 18% / 10% across 3 steps, collect points,
               unlock rank rewards up to Rs 35,000, and withdraw from Rs 1,000 with simple platform rules.
+            </p>
+            <p className="mt-2 max-w-2xl text-base font-semibold text-gold lg:max-w-xl">
+              Earn Rs 50 on signup.
             </p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
               <Link to="/signup">
