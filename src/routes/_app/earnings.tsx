@@ -114,7 +114,7 @@ function Earnings() {
       <div>
         <h1 className="text-3xl font-bold">Earning System</h1>
         <p className="text-muted-foreground">
-          Approved plans add fixed points, unlock 3-level referral income, and move you toward
+          Approved plans add fixed points, unlock 3-step referral income, and move you toward
           claimable reward milestones instead of ROI-based returns.
         </p>
       </div>
@@ -136,7 +136,7 @@ function Earnings() {
           icon={Coins}
           label="Referral income"
           value={formatCurrency(dashboard?.stats.totalCommissionEarned ?? 0)}
-          hint="3-level team commissions"
+          hint="3-step team commissions"
         />
         <StatCard
           icon={Gift}

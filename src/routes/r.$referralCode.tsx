@@ -143,7 +143,7 @@ function ReferralPreviewPage() {
                 You were invited by <span className="text-gradient">{data.sponsor.name}</span>
               </h1>
               <p className="max-w-2xl text-lg text-muted-foreground">
-                Join the NEXO Women Earning System to start with a fixed plan, build a 3-level team,
+                Join the NEXO Women Earning System to start with a fixed plan, build a 3-step team,
                 collect points, and unlock milestone rewards in your wallet.
               </p>
               <Link to={`/signup?ref=${data.sponsor.referralCode}`}>
@@ -165,17 +165,17 @@ function ReferralPreviewPage() {
               <div className="mt-6 grid gap-3 text-sm">
                 <PreviewStat
                   icon={Users}
-                  label="Level 1 income"
+                  label="Step 1 income"
                   value={`${data.settings.referralRules.level1Percent}%`}
                 />
                 <PreviewStat
                   icon={Gift}
-                  label="Level 2 income"
+                  label="Step 2 income"
                   value={`${data.settings.referralRules.level2Percent}%`}
                 />
                 <PreviewStat
                   icon={Wallet}
-                  label="Level 3 income"
+                  label="Step 3 income"
                   value={`${data.settings.referralRules.level3Percent}%`}
                 />
               </div>

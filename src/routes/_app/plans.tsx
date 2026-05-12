@@ -115,7 +115,7 @@ function Plans() {
         <h1 className="text-3xl font-bold">Women Earning Plans</h1>
         <p className="text-muted-foreground">
           Submit your manual payment, wait for admin approval, and the system will add fixed plan
-          points plus 3-level referral commissions automatically.
+          points plus 3-step referral commissions automatically.
         </p>
       </div>
 
@@ -157,7 +157,7 @@ function Plans() {
                   {plan.points} points on approval
                 </div>
                 <div className="mt-1 text-xs text-muted-foreground">
-                  Level income: {plan.level1Percent}% / {plan.level2Percent}% / {plan.level3Percent}%
+                  Step income: {plan.level1Percent}% / {plan.level2Percent}% / {plan.level3Percent}%
                 </div>
                 {latestPlanStatuses.get(plan.id) ? (
                   <div className="mt-3">

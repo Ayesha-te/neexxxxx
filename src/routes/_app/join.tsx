@@ -70,7 +70,7 @@ function JoinOptionsPage() {
           <h1 className="text-3xl font-bold">Join Nexo Women Earning System</h1>
           <p className="text-muted-foreground">
             Start with an investment plan, earn fixed points, unlock reward ranks, and build your
-            team with a 3-level referral structure.
+            team with a 3-step referral structure.
           </p>
         </div>
         <Badge className="gradient-gold border-0 px-3 py-1.5 text-gold-foreground capitalize">
@@ -124,22 +124,22 @@ function JoinOptionsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="text-muted-foreground">
-              Three levels only. Total commission equals 50% across your network.
+              Three steps only. Total commission equals 50% across your network.
             </div>
             <div className="grid gap-3">
               <MiniRule
                 icon={Users}
-                label="Level 1"
+                label="Step 1"
                 value={`${data?.settings.referralRules.level1Percent ?? 0}%`}
               />
               <MiniRule
                 icon={Coins}
-                label="Level 2"
+                label="Step 2"
                 value={`${data?.settings.referralRules.level2Percent ?? 0}%`}
               />
               <MiniRule
                 icon={ShieldCheck}
-                label="Level 3"
+                label="Step 3"
                 value={`${data?.settings.referralRules.level3Percent ?? 0}%`}
               />
             </div>

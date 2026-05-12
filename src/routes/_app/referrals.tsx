@@ -64,7 +64,7 @@ function Referrals() {
       <div>
         <h1 className="text-3xl font-bold">Referral System</h1>
         <p className="text-muted-foreground">
-          Build only three levels and earn {data?.settings.level1Percent ?? 30}% /
+          Build only three steps and earn {data?.settings.level1Percent ?? 30}% /
           {" "}
           {data?.settings.level2Percent ?? 15}% / {data?.settings.level3Percent ?? 5}% on approved
           team investments. Total commission = 50%.
@@ -96,17 +96,17 @@ function Referrals() {
       <div className="grid gap-4 sm:grid-cols-3">
         {[
           {
-            label: "Level 1",
+            label: "Step 1",
             count: data?.summary.level1 ?? 0,
             detail: `${data?.settings.level1Percent ?? 30}% commission`,
           },
           {
-            label: "Level 2",
+            label: "Step 2",
             count: data?.summary.level2 ?? 0,
             detail: `${data?.settings.level2Percent ?? 15}% commission`,
           },
           {
-            label: "Level 3",
+            label: "Step 3",
             count: data?.summary.level3 ?? 0,
             detail: `${data?.settings.level3Percent ?? 5}% commission`,
           },

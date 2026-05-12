@@ -317,17 +317,17 @@ function Dashboard() {
         <CardContent className="grid grid-cols-3 gap-4">
           {[
             {
-              label: "Level 1",
+              label: "Step 1",
               count: data?.referralSummary.level1 ?? 0,
               type: `${data?.referralRules.level1Percent ?? 0}% commission`,
             },
             {
-              label: "Level 2",
+              label: "Step 2",
               count: data?.referralSummary.level2 ?? 0,
               type: `${data?.referralRules.level2Percent ?? 0}% commission`,
             },
             {
-              label: "Level 3",
+              label: "Step 3",
               count: data?.referralSummary.level3 ?? 0,
               type: `${data?.referralRules.level3Percent ?? 0}% commission`,
             },

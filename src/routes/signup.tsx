@@ -47,8 +47,8 @@ function SignupPage() {
             <span className="text-gradient">earn and grow together</span>.
           </h2>
           <p className="text-muted-foreground">
-            Create your account to unlock fixed plans, 3-level team income, points, and reward
-            milestones.
+            Create your account to unlock fixed plans, 3-step team income, points, and reward
+            milestones — join now and get a PKR 50 signup bonus credited instantly.
           </p>
         </div>
         <div className="text-xs text-muted-foreground">(c) 2026 {BRAND_NAME}.</div>
@@ -76,7 +76,7 @@ function SignupPage() {
         >
           <div>
             <h1 className="text-2xl font-bold">Create account</h1>
-            <p className="text-sm text-muted-foreground">Sign up to begin your Nexo journey.</p>
+            <p className="text-sm text-muted-foreground">Sign up and get PKR 50 credited instantly.</p>
           </div>
           <div className="space-y-2">
             <Label>Full name</Label>

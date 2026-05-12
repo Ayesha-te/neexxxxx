@@ -30,7 +30,7 @@ function LoginPage() {
             Welcome back to your <span className="text-gradient-gold">earning system</span>.
           </h2>
           <p className="text-muted-foreground">
-            Check your plans, points, rewards, withdrawals, and 3-level referral income in one
+            Check your plans, points, rewards, withdrawals, and 3-step referral income in one
             place.
           </p>
         </div>
