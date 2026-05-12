@@ -25,6 +25,9 @@ type DashboardResponse = {
       name: string;
       price: number;
       points: number;
+      level1Percent: number;
+      level2Percent: number;
+      level3Percent: number;
     } | null;
     metrics: {
       points: number;
@@ -272,8 +275,10 @@ function Earnings() {
                   <Metric
                     label="Referral unlock"
                     value={
-                      referralRank?.percents
-                        ? `${referralRank.percents.direct}% / ${referralRank.percents.indirect}% / ${referralRank.percents.team}%`
+                      item.plan
+                        ? `${item.plan.level1Percent}% / ${item.plan.level2Percent}% / ${item.plan.level3Percent}%`
+                        : referralRank?.percents
+                          ? `${referralRank.percents.direct}% / ${referralRank.percents.indirect}% / ${referralRank.percents.team}%`
                         : referralRules
                           ? `${referralRules.level1Percent}% / ${referralRules.level2Percent}% / ${referralRules.level3Percent}%`
                             : "48% / 18% / 10%"

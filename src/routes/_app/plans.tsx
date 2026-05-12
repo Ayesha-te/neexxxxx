@@ -38,6 +38,9 @@ type InvestmentsResponse = {
     name: string;
     price: number;
     points: number;
+    level1Percent: number;
+    level2Percent: number;
+    level3Percent: number;
     benefits: string[];
     featured?: boolean;
   }>;
@@ -153,6 +156,9 @@ function Plans() {
                 <div className="mt-1 text-sm font-semibold text-gradient-gold">
                   {plan.points} points on approval
                 </div>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  Level income: {plan.level1Percent}% / {plan.level2Percent}% / {plan.level3Percent}%
+                </div>
                 {latestPlanStatuses.get(plan.id) ? (
                   <div className="mt-3">
                     <StatusBadge status={latestPlanStatuses.get(plan.id) ?? ""} />
@@ -195,11 +201,7 @@ function Plans() {
             </div>
             <div className="mt-2 text-sm text-muted-foreground">
               {selectedPlan
-                ? `${formatCurrency(selectedPlan.price)} | ${selectedPlan.points} points | ${
-                      joinData
-                        ? `${joinData.settings.referralRules.level1Percent}% / ${joinData.settings.referralRules.level2Percent}% / ${joinData.settings.referralRules.level3Percent}%`
-                        : "48% / 18% / 10%"
-                  } team income`
+                ? `${formatCurrency(selectedPlan.price)} | ${selectedPlan.points} points`
                 : "Choose a plan card first. The plan will only start after admin verifies your deposit."}
             </div>
             <div className="mt-4 rounded-xl border border-border/40 bg-background/45 p-3">
@@ -212,8 +214,10 @@ function Plans() {
             </div>
             <div className="mt-4 text-xs text-muted-foreground">
               Referral structure:{" "}
-              {joinData
-                ? `${joinData.settings.referralRules.level1Percent}% / ${joinData.settings.referralRules.level2Percent}% / ${joinData.settings.referralRules.level3Percent}%`
+              {selectedPlan
+                ? `${selectedPlan.level1Percent}% / ${selectedPlan.level2Percent}% / ${selectedPlan.level3Percent}%`
+                : joinData
+                  ? `${joinData.settings.referralRules.level1Percent}% / ${joinData.settings.referralRules.level2Percent}% / ${joinData.settings.referralRules.level3Percent}%`
                 : "48% / 18% / 10%"}
             </div>
           </div>
