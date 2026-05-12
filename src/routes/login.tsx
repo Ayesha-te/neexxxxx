@@ -1,11 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { BrandLockup } from "@/components/BrandLockup";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { apiRequest, writeSession, type AppUser } from "@/lib/api";
+import { apiRequest, readSession, writeSession, type AppUser } from "@/lib/api";
 import { BRAND_NAME, pageTitle } from "@/lib/brand";
 
 export const Route = createFileRoute("/login")({
@@ -18,6 +18,12 @@ function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (readSession()?.token) {
+      void navigate({ to: "/dashboard" });
+    }
+  }, [navigate]);
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 gradient-hero">

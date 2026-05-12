@@ -65,7 +65,7 @@ function SignupPage() {
               });
               writeSession(response);
               toast.success("Account created!");
-              await navigate({ to: "/join" });
+              await navigate({ to: "/dashboard" });
             } catch (error) {
               toast.error(error instanceof Error ? error.message : "Unable to create account.");
             } finally {
