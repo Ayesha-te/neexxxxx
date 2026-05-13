@@ -65,13 +65,20 @@ type JoinOptionsResponse = {
 
 type ReferralRankResponse = {
   totalPoints: number;
+  personalPoints: number;
+  referralPoints: number;
+  referralBreakdown: {
+    level1Points: number;
+    level2Points: number;
+    level3Points: number;
+  };
   tier: {
     title: string;
     pointsRequired: number;
     directPercent: number;
     indirectPercent: number;
     teamPercent: number;
-  } | null;
+  };
   percents: {
     direct: number;
     indirect: number;
@@ -114,8 +121,8 @@ function Earnings() {
       <div>
         <h1 className="text-3xl font-bold">Earning System</h1>
         <p className="text-muted-foreground">
-          Approved plans add fixed points, unlock 3-step referral income, and move you toward
-          claimable reward milestones instead of ROI-based returns.
+          Approved plans add personal points, referral team activity adds team points, and your
+          combined total unlocks real rank levels with 3-step referral income.
         </p>
       </div>
 
@@ -130,7 +137,7 @@ function Earnings() {
           icon={Target}
           label="Points collected"
           value={(dashboard?.stats.totalPoints ?? 0).toLocaleString()}
-          hint="From active approved plans"
+          hint="Personal + referral team points"
         />
         <StatCard
           icon={Coins}
@@ -154,7 +161,7 @@ function Earnings() {
           <CardContent className="grid gap-3 sm:grid-cols-2">
             <RuleCard
               label="Plan activation"
-              value="Every approved plan adds fixed points to your account."
+              value="Every approved plan adds fixed personal points to your account."
             />
             <RuleCard
               label="Team commissions"
@@ -166,11 +173,11 @@ function Earnings() {
             />
             <RuleCard
               label="Your referral rank"
-              value={
-                referralRank?.tier
-                  ? `${referralRank.tier.title} • ${referralRank.totalPoints.toLocaleString()} points`
-                  : `${(referralRank?.totalPoints ?? 0).toLocaleString()} points • Starter`
-              }
+              value={`${referralRank?.tier.title ?? "Starter"} • ${(referralRank?.totalPoints ?? 0).toLocaleString()} points`}
+            />
+            <RuleCard
+              label="Points formula"
+              value={`${(referralRank?.personalPoints ?? 0).toLocaleString()} personal + ${(referralRank?.referralPoints ?? 0).toLocaleString()} referral points`}
             />
             <RuleCard
               label="Reward claims"

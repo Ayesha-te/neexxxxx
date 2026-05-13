@@ -16,6 +16,28 @@ type ReferralsResponse = {
     level2Percent: number;
     level3Percent: number;
   };
+  rank: {
+    totalPoints: number;
+    personalPoints: number;
+    referralPoints: number;
+    referralBreakdown: {
+      level1Points: number;
+      level2Points: number;
+      level3Points: number;
+    };
+    tier: {
+      title: string;
+      pointsRequired: number;
+      directPercent: number;
+      indirectPercent: number;
+      teamPercent: number;
+    };
+    percents: {
+      direct: number;
+      indirect: number;
+      team: number;
+    };
+  };
   summary: {
     level1: number;
     level2: number;
@@ -64,11 +86,38 @@ function Referrals() {
       <div>
         <h1 className="text-3xl font-bold">Referral System</h1>
         <p className="text-muted-foreground">
-          Build only three steps and earn {data?.settings.level1Percent ?? 30}% /
+          Build only three steps and earn {data?.rank.percents.direct ?? 30}% /
           {" "}
-          {data?.settings.level2Percent ?? 15}% / {data?.settings.level3Percent ?? 5}% on approved
-          team investments. Total commission = 50%.
+          {data?.rank.percents.indirect ?? 15}% / {data?.rank.percents.team ?? 5}% on approved
+          team investments. Your current rank: {data?.rank.tier.title ?? "Starter"}.
         </p>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Card className="glass border-border/40">
+          <CardContent className="space-y-1 p-5">
+            <div className="text-xs uppercase text-muted-foreground">Total points</div>
+            <div className="text-3xl font-bold">{(data?.rank.totalPoints ?? 0).toLocaleString()}</div>
+          </CardContent>
+        </Card>
+        <Card className="glass border-border/40">
+          <CardContent className="space-y-1 p-5">
+            <div className="text-xs uppercase text-muted-foreground">Your plan points</div>
+            <div className="text-3xl font-bold">{(data?.rank.personalPoints ?? 0).toLocaleString()}</div>
+          </CardContent>
+        </Card>
+        <Card className="glass border-border/40">
+          <CardContent className="space-y-1 p-5">
+            <div className="text-xs uppercase text-muted-foreground">Referral points</div>
+            <div className="text-3xl font-bold">{(data?.rank.referralPoints ?? 0).toLocaleString()}</div>
+          </CardContent>
+        </Card>
+        <Card className="glass border-border/40">
+          <CardContent className="space-y-1 p-5">
+            <div className="text-xs uppercase text-muted-foreground">Current rank</div>
+            <div className="text-3xl font-bold">{data?.rank.tier.title ?? "Starter"}</div>
+          </CardContent>
+        </Card>
       </div>
 
       <Card className="glass border-border/40">
@@ -98,17 +147,17 @@ function Referrals() {
           {
             label: "Step 1",
             count: data?.summary.level1 ?? 0,
-            detail: `${data?.settings.level1Percent ?? 30}% commission`,
+            detail: `${data?.rank.percents.direct ?? 30}% commission`,
           },
           {
             label: "Step 2",
             count: data?.summary.level2 ?? 0,
-            detail: `${data?.settings.level2Percent ?? 15}% commission`,
+            detail: `${data?.rank.percents.indirect ?? 15}% commission`,
           },
           {
             label: "Step 3",
             count: data?.summary.level3 ?? 0,
-            detail: `${data?.settings.level3Percent ?? 5}% commission`,
+            detail: `${data?.rank.percents.team ?? 5}% commission`,
           },
         ].map((item) => (
           <Card key={item.label} className="glass border-border/40">
