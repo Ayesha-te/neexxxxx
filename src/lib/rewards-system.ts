@@ -15,16 +15,16 @@ export interface MilestoneReward {
 export type MilestoneStatus = "earned" | "current" | "locked";
 
 export const levelBenefits: LevelBenefit[] = [
-  { level: 1, name: "Starter Queen", pointsRequired: 6, directBonus: 28, indirectBonus: 16, teamBonus: 0 },
-  { level: 2, name: "Vision Queen", pointsRequired: 12, directBonus: 30, indirectBonus: 16, teamBonus: 0 },
-  { level: 3, name: "Elevate Queen", pointsRequired: 30, directBonus: 33, indirectBonus: 16, teamBonus: 3 },
-  { level: 4, name: "Sapphire Queen", pointsRequired: 44, directBonus: 35, indirectBonus: 16, teamBonus: 4 },
-  { level: 5, name: "Ruby Queen", pointsRequired: 63, directBonus: 37, indirectBonus: 17, teamBonus: 5 },
-  { level: 6, name: "Diamond Queen", pointsRequired: 80, directBonus: 39, indirectBonus: 17, teamBonus: 6 },
-  { level: 7, name: "Platinum Queen", pointsRequired: 100, directBonus: 41, indirectBonus: 18, teamBonus: 7 },
-  { level: 8, name: "Elite Queen", pointsRequired: 120, directBonus: 43, indirectBonus: 18, teamBonus: 8 },
-  { level: 9, name: "Royal Queen", pointsRequired: 140, directBonus: 46, indirectBonus: 18, teamBonus: 9 },
-  { level: 10, name: "Imperial Queen", pointsRequired: 165, directBonus: 48, indirectBonus: 18, teamBonus: 10 },
+  { level: 1, name: "Starter Queen", pointsRequired: 30, directBonus: 28, indirectBonus: 16, teamBonus: 0 },
+  { level: 2, name: "Vision Queen", pointsRequired: 1000, directBonus: 30, indirectBonus: 16, teamBonus: 0 },
+  { level: 3, name: "Elevate Queen", pointsRequired: 4000, directBonus: 33, indirectBonus: 16, teamBonus: 3 },
+  { level: 4, name: "Sapphire Queen", pointsRequired: 8000, directBonus: 35, indirectBonus: 16, teamBonus: 4 },
+  { level: 5, name: "Ruby Queen", pointsRequired: 20000, directBonus: 37, indirectBonus: 17, teamBonus: 5 },
+  { level: 6, name: "Diamond Queen", pointsRequired: 50000, directBonus: 39, indirectBonus: 17, teamBonus: 6 },
+  { level: 7, name: "Platinum Queen", pointsRequired: 120000, directBonus: 41, indirectBonus: 18, teamBonus: 7 },
+  { level: 8, name: "Elite Queen", pointsRequired: 250000, directBonus: 43, indirectBonus: 18, teamBonus: 8 },
+  { level: 9, name: "Royal Queen", pointsRequired: 400000, directBonus: 46, indirectBonus: 18, teamBonus: 9 },
+  { level: 10, name: "Imperial Queen", pointsRequired: 500000, directBonus: 48, indirectBonus: 18, teamBonus: 10 },
 ];
 
 export const milestoneRewards: MilestoneReward[] = [
