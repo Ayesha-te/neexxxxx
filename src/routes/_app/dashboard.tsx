@@ -87,6 +87,29 @@ type DashboardResponse = {
   }>;
 };
 
+type ReferralRankResponse = {
+  totalPoints: number;
+  personalPoints: number;
+  referralPoints: number;
+  referralBreakdown: {
+    level1Points: number;
+    level2Points: number;
+    level3Points: number;
+  };
+  tier: {
+    title: string;
+    pointsRequired: number;
+    directPercent: number | null;
+    indirectPercent: number | null;
+    teamPercent: number | null;
+  } | null;
+  percents: {
+    direct: number | null;
+    indirect: number | null;
+    team: number | null;
+  } | null;
+};
+
 export const Route = createFileRoute("/_app/dashboard")({
   head: () => ({ meta: [{ title: pageTitle("Dashboard") }] }),
   component: Dashboard,
@@ -95,14 +118,46 @@ export const Route = createFileRoute("/_app/dashboard")({
 function Dashboard() {
   const { token, user } = useAppAuth();
   const [data, setData] = useState<DashboardResponse | null>(null);
+  const [rank, setRank] = useState<ReferralRankResponse | null>(null);
 
   useEffect(() => {
     if (!token) {
       return;
     }
 
-    void apiRequest<DashboardResponse>("/user/dashboard", { token }).then(setData);
+    const loadDashboard = async () => {
+      const [dashboardResult, rankResult] = await Promise.allSettled([
+        apiRequest<DashboardResponse>("/user/dashboard", { token }),
+        apiRequest<ReferralRankResponse>("/user/referral-rank", { token }),
+      ]);
+
+      if (dashboardResult.status === "fulfilled") {
+        setData(dashboardResult.value);
+      }
+
+      if (rankResult.status === "fulfilled") {
+        setRank(rankResult.value);
+      }
+    };
+
+    void loadDashboard();
+    const refreshTimer = window.setInterval(() => {
+      void loadDashboard();
+    }, 30_000);
+
+    return () => {
+      window.clearInterval(refreshTimer);
+    };
   }, [token]);
+
+  const percentOrFallback = (value: number | null | undefined, fallback: number) =>
+    Number.isFinite(value) ? Number(value) : fallback;
+
+  const referralPercents = {
+    level1: percentOrFallback(rank?.percents?.direct, data?.referralRules.level1Percent ?? 0),
+    level2: percentOrFallback(rank?.percents?.indirect, data?.referralRules.level2Percent ?? 0),
+    level3: percentOrFallback(rank?.percents?.team, data?.referralRules.level3Percent ?? 0),
+  };
 
   const cards = [
     {
@@ -319,17 +374,17 @@ function Dashboard() {
             {
               label: "Step 1",
               count: data?.referralSummary.level1 ?? 0,
-              type: `${data?.referralRules.level1Percent ?? 0}% commission`,
+              type: `${referralPercents.level1}% commission`,
             },
             {
               label: "Step 2",
               count: data?.referralSummary.level2 ?? 0,
-              type: `${data?.referralRules.level2Percent ?? 0}% commission`,
+              type: `${referralPercents.level2}% commission`,
             },
             {
               label: "Step 3",
               count: data?.referralSummary.level3 ?? 0,
-              type: `${data?.referralRules.level3Percent ?? 0}% commission`,
+              type: `${referralPercents.level3}% commission`,
             },
           ].map((item) => (
             <div key={item.label} className="rounded-xl border border-border/40 bg-background/35 p-5 text-center">
