@@ -72,7 +72,7 @@ function Referrals() {
   }, [token]);
 
   const copy = async () => {
-    if (!data?.user.referralLink) {
+    if (!data?.user.referralLinkEnabled || !data?.user.referralLink) {
       toast.error("Referral link is not available yet.");
       return;
     }
@@ -127,15 +127,28 @@ function Referrals() {
         <CardContent className="flex flex-col gap-3 sm:flex-row">
           <Input
             readOnly
-            value={data?.user.referralLink ?? "Referral link unavailable"}
+            value={
+              data?.user.referralLinkEnabled
+                ? (data?.user.referralLink ?? "Referral link unavailable")
+                : "Referral unlocks after your first approved investment."
+            }
             className="flex-1 bg-input/50"
           />
-          <Button onClick={copy} className="gradient-primary text-primary-foreground">
+          <Button
+            onClick={copy}
+            disabled={!data?.user.referralLinkEnabled}
+            className="gradient-primary text-primary-foreground disabled:opacity-60"
+          >
             <Copy className="mr-2 size-4" /> Copy
           </Button>
           <Button
             variant="outline"
-            onClick={() => toast.success("Your referral link is ready to share.")}
+            disabled={!data?.user.referralLinkEnabled}
+            onClick={() =>
+              data?.user.referralLinkEnabled
+                ? toast.success("Your referral link is ready to share.")
+                : toast.error("Referral link unlocks after approved investment.")
+            }
           >
             <Share2 className="mr-2 size-4" /> Share
           </Button>
