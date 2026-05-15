@@ -45,6 +45,8 @@ type WalletResponse = {
     taxPercent: number;
     taxAmount: number;
     netAmount: number;
+    accountType: "easypaisa" | "jazzcash" | "bank_transfer";
+    accountDetails: string;
     status: "pending" | "approved" | "rejected";
     note: string;
     reviewNote: string;
@@ -63,6 +65,10 @@ function WalletPage() {
   const { token } = useAppAuth();
   const [data, setData] = useState<WalletResponse | null>(null);
   const [amount, setAmount] = useState("");
+  const [accountType, setAccountType] = useState<"easypaisa" | "jazzcash" | "bank_transfer">(
+    "easypaisa",
+  );
+  const [accountDetails, setAccountDetails] = useState("");
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -181,11 +187,15 @@ function WalletPage() {
                     token,
                     body: {
                       amount: Number(amount),
+                      accountType,
+                      accountDetails: accountDetails.trim(),
                       note: note.trim(),
                     },
                   });
                   toast.success("Withdrawal request submitted for admin review.");
                   setAmount("");
+                  setAccountType("easypaisa");
+                  setAccountDetails("");
                   setNote("");
                   await loadData();
                 } catch (error) {
@@ -216,6 +226,38 @@ function WalletPage() {
               </div>
 
               <div className="space-y-2">
+                <label className="text-sm font-medium">Account type</label>
+                <select
+                  value={accountType}
+                  onChange={(event) =>
+                    setAccountType(event.target.value as "easypaisa" | "jazzcash" | "bank_transfer")
+                  }
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  required
+                >
+                  <option value="easypaisa">EasyPaisa</option>
+                  <option value="jazzcash">JazzCash</option>
+                  <option value="bank_transfer">Bank Transfer</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  {accountType === "bank_transfer" ? "Bank account / IBAN" : "Account number"}
+                </label>
+                <Input
+                  value={accountDetails}
+                  onChange={(event) => setAccountDetails(event.target.value)}
+                  placeholder={
+                    accountType === "bank_transfer"
+                      ? "Enter bank account number or IBAN"
+                      : "Enter mobile wallet number"
+                  }
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
                 <label className="text-sm font-medium">Note for admin</label>
                 <Textarea
                   value={note}
@@ -227,7 +269,7 @@ function WalletPage() {
 
               <Button
                 type="submit"
-                disabled={submitting || !data || !!pendingWithdrawal}
+                disabled={submitting || !data || !!pendingWithdrawal || !accountDetails.trim()}
                 className="gradient-primary text-primary-foreground"
               >
                 {submitting ? "Submitting..." : "Request Withdrawal"}
@@ -255,6 +297,10 @@ function WalletPage() {
                       <div className="mt-1 text-sm text-muted-foreground">
                         Net {formatCurrency(withdrawal.netAmount)} after{" "}
                         {formatCurrency(withdrawal.taxAmount)} tax
+                      </div>
+                      <div className="mt-1 text-sm text-muted-foreground">
+                        {formatWithdrawalAccountType(withdrawal.accountType)}:{" "}
+                        {withdrawal.accountDetails || "-"}
                       </div>
                       <div className="mt-2 text-xs text-muted-foreground">
                         {new Date(withdrawal.createdAt).toLocaleString("en-PK", {
@@ -414,4 +460,12 @@ function formatTransactionType(type: WalletResponse["transactions"][number]["typ
 
 function roundMoney(value: number) {
   return Math.round(value * 100) / 100;
+}
+
+function formatWithdrawalAccountType(
+  type: WalletResponse["withdrawals"][number]["accountType"],
+) {
+  if (type === "easypaisa") return "EasyPaisa";
+  if (type === "jazzcash") return "JazzCash";
+  return "Bank Transfer";
 }
