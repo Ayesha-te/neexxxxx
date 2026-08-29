@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { apiRequest, formatCurrency } from "@/lib/api";
 import { useAppAuth } from "@/lib/auth";
+import { getPaymentMethodIcon } from "@/lib/paymentMethodIcons";
 
 type PlanOption = {
   id: string;
@@ -262,26 +263,38 @@ function CreateAccountPage() {
 
               <div className="space-y-2">
                 <Label>Payment method</Label>
-                <select
-                  required
-                  value={paymentMethodType}
-                  onChange={(event) =>
-                    setPaymentMethodType(event.target.value as typeof paymentMethodType)
-                  }
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                >
-                  <option value="">Select a payment method</option>
-                  {paymentMethods.map((method) => (
-                    <option key={method.id} value={method.type}>
-                      {method.label}
-                    </option>
-                  ))}
-                </select>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {paymentMethods.map((method) => {
+                    const Icon = getPaymentMethodIcon(method.type);
+                    const isSelected = paymentMethodType === method.type;
+                    return (
+                      <button
+                        key={method.id}
+                        type="button"
+                        onClick={() => setPaymentMethodType(method.type)}
+                        className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-left text-sm font-medium transition-colors ${
+                          isSelected
+                            ? "border-primary bg-primary/10 text-foreground"
+                            : "border-input bg-background text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        <Icon className="size-4 shrink-0" />
+                        <span className="truncate">{method.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {selectedMethod ? (
                 <div className="rounded-2xl border border-border/40 bg-background/35 p-4 text-sm">
-                  <div className="font-semibold">{selectedMethod.label}</div>
+                  <div className="flex items-center gap-2 font-semibold">
+                    {(() => {
+                      const Icon = getPaymentMethodIcon(selectedMethod.type);
+                      return <Icon className="size-4 text-primary" />;
+                    })()}
+                    {selectedMethod.label}
+                  </div>
                   <div className="mt-1 text-muted-foreground">
                     Account: {selectedMethod.accountNumber} ({selectedMethod.accountHolderName})
                   </div>

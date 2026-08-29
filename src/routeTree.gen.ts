@@ -21,7 +21,6 @@ import { Route as AppRewardsRouteImport } from './routes/_app/rewards'
 import { Route as AppReferralsRouteImport } from './routes/_app/referrals'
 import { Route as AppPlansRouteImport } from './routes/_app/plans'
 import { Route as AppOwnersRouteImport } from './routes/_app/owners'
-import { Route as AppLuckyDrawRouteImport } from './routes/_app/lucky-draw'
 import { Route as AppJoinRouteImport } from './routes/_app/join'
 import { Route as AppEarningsRouteImport } from './routes/_app/earnings'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
@@ -86,11 +85,6 @@ const AppOwnersRoute = AppOwnersRouteImport.update({
   path: '/owners',
   getParentRoute: () => AppRoute,
 } as any)
-const AppLuckyDrawRoute = AppLuckyDrawRouteImport.update({
-  id: '/lucky-draw',
-  path: '/lucky-draw',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppJoinRoute = AppJoinRouteImport.update({
   id: '/join',
   path: '/join',
@@ -121,7 +115,6 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AppDashboardRoute
   '/earnings': typeof AppEarningsRoute
   '/join': typeof AppJoinRoute
-  '/lucky-draw': typeof AppLuckyDrawRoute
   '/owners': typeof AppOwnersRoute
   '/plans': typeof AppPlansRoute
   '/referrals': typeof AppReferralsRoute
@@ -139,7 +132,6 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AppDashboardRoute
   '/earnings': typeof AppEarningsRoute
   '/join': typeof AppJoinRoute
-  '/lucky-draw': typeof AppLuckyDrawRoute
   '/owners': typeof AppOwnersRoute
   '/plans': typeof AppPlansRoute
   '/referrals': typeof AppReferralsRoute
@@ -159,7 +151,6 @@ export interface FileRoutesById {
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/earnings': typeof AppEarningsRoute
   '/_app/join': typeof AppJoinRoute
-  '/_app/lucky-draw': typeof AppLuckyDrawRoute
   '/_app/owners': typeof AppOwnersRoute
   '/_app/plans': typeof AppPlansRoute
   '/_app/referrals': typeof AppReferralsRoute
@@ -179,7 +170,6 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/earnings'
     | '/join'
-    | '/lucky-draw'
     | '/owners'
     | '/plans'
     | '/referrals'
@@ -197,7 +187,6 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/earnings'
     | '/join'
-    | '/lucky-draw'
     | '/owners'
     | '/plans'
     | '/referrals'
@@ -216,7 +205,6 @@ export interface FileRouteTypes {
     | '/_app/dashboard'
     | '/_app/earnings'
     | '/_app/join'
-    | '/_app/lucky-draw'
     | '/_app/owners'
     | '/_app/plans'
     | '/_app/referrals'
@@ -321,13 +309,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppOwnersRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/lucky-draw': {
-      id: '/_app/lucky-draw'
-      path: '/lucky-draw'
-      fullPath: '/lucky-draw'
-      preLoaderRoute: typeof AppLuckyDrawRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/join': {
       id: '/_app/join'
       path: '/join'
@@ -364,7 +345,6 @@ interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
   AppEarningsRoute: typeof AppEarningsRoute
   AppJoinRoute: typeof AppJoinRoute
-  AppLuckyDrawRoute: typeof AppLuckyDrawRoute
   AppOwnersRoute: typeof AppOwnersRoute
   AppPlansRoute: typeof AppPlansRoute
   AppReferralsRoute: typeof AppReferralsRoute
@@ -378,7 +358,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
   AppEarningsRoute: AppEarningsRoute,
   AppJoinRoute: AppJoinRoute,
-  AppLuckyDrawRoute: AppLuckyDrawRoute,
   AppOwnersRoute: AppOwnersRoute,
   AppPlansRoute: AppPlansRoute,
   AppReferralsRoute: AppReferralsRoute,

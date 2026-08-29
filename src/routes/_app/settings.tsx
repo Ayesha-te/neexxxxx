@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { apiRequest, type AppUser } from "@/lib/api";
+import { apiRequest, changePassword, type AppUser } from "@/lib/api";
 import { useAppAuth } from "@/lib/auth";
 
 type SiteInfoResponse = {
@@ -42,6 +42,12 @@ function SettingsPage() {
   });
   const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [passwordSaving, setPasswordSaving] = useState(false);
 
   const initials = (user?.name ?? "NX")
     .split(" ")
@@ -169,6 +175,87 @@ function SettingsPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="glass border-border/40">
+        <CardHeader>
+          <CardTitle>Change Password</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form
+            className="grid gap-4 sm:grid-cols-3"
+            onSubmit={async (event) => {
+              event.preventDefault();
+              if (!token) {
+                return;
+              }
+
+              if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+                toast.error("New password and confirmation do not match.");
+                return;
+              }
+
+              setPasswordSaving(true);
+              try {
+                await changePassword(token, {
+                  currentPassword: passwordForm.currentPassword,
+                  newPassword: passwordForm.newPassword,
+                });
+                toast.success("Password updated");
+                setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+              } catch (error) {
+                toast.error(error instanceof Error ? error.message : "Unable to update password.");
+              } finally {
+                setPasswordSaving(false);
+              }
+            }}
+          >
+            <div className="space-y-2">
+              <Label>Current password</Label>
+              <Input
+                type="password"
+                value={passwordForm.currentPassword}
+                onChange={(event) =>
+                  setPasswordForm((current) => ({ ...current, currentPassword: event.target.value }))
+                }
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>New password</Label>
+              <Input
+                type="password"
+                value={passwordForm.newPassword}
+                onChange={(event) =>
+                  setPasswordForm((current) => ({ ...current, newPassword: event.target.value }))
+                }
+                minLength={6}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Confirm new password</Label>
+              <Input
+                type="password"
+                value={passwordForm.confirmPassword}
+                onChange={(event) =>
+                  setPasswordForm((current) => ({ ...current, confirmPassword: event.target.value }))
+                }
+                minLength={6}
+                required
+              />
+            </div>
+            <div className="sm:col-span-3">
+              <Button
+                type="submit"
+                disabled={passwordSaving}
+                className="gradient-primary text-primary-foreground"
+              >
+                {passwordSaving ? "Updating..." : "Update password"}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Contact Us Section */}

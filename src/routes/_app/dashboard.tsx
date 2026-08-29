@@ -1,9 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowUpRight,
   Bell,
   Coins,
   Gift,
+  GraduationCap,
+  ShieldCheck,
   Sparkles,
   Target,
   TrendingUp,
@@ -18,6 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiRequest, type AppUser } from "@/lib/api";
 import { useAppAuth } from "@/lib/auth";
 import { useCurrency } from "@/lib/currency";
+import { levelBenefits } from "@/lib/rewards-system";
 
 type ActivityFeedItem = {
   id: string;
@@ -136,6 +139,7 @@ type DashboardResponse = {
     description: string;
     createdAt: string;
   }>;
+  trainingSeatConfirmed: boolean;
 };
 
 type ReferralRankResponse = {
@@ -267,6 +271,14 @@ function Dashboard() {
     (data?.referralSummary.level1 ?? 0) +
     (data?.referralSummary.level2 ?? 0) +
     (data?.referralSummary.level3 ?? 0);
+  const currentRiseCoins = data?.stats.totalRiseCoins ?? rank?.totalRiseCoins ?? 0;
+  const nextRankTier = levelBenefits.find((tier) => tier.riseCoinsRequired > currentRiseCoins) ?? null;
+  const riseCoinsToNextRank = nextRankTier
+    ? Math.max(0, nextRankTier.riseCoinsRequired - currentRiseCoins)
+    : 0;
+
+  const pendingDeposit = data?.investments.find((investment) => investment.status === "pending") ?? null;
+
   const nextMilestone = data?.rewardProgress.nextMilestone;
   const milestoneProgress = nextMilestone
     ? Math.max(
@@ -293,15 +305,30 @@ function Dashboard() {
               </div>
               <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">
                 Welcome back, {user?.name ?? "Nexo member"}
+                {rank?.tier?.title ? (
+                  <span className="ml-2 align-middle text-lg font-bold text-gold sm:text-xl">
+                    — {rank.tier.title}
+                  </span>
+                ) : null}
               </h1>
               <p className="mt-2 text-primary-foreground/85 sm:text-base">
                 Track your growth journey with live Rise Coins, balance movement, milestones, and
                 referrals all in one view.
               </p>
             </div>
-            <Badge className="gradient-gold border-0 px-3 py-1.5 text-gold-foreground capitalize shadow-[0_14px_30px_-18px_oklch(0.83_0.15_80)]">
-              {(data?.stats.accountType ?? user?.accountType ?? "prospect").replace("_", " ")}
-            </Badge>
+            <div className="flex flex-col items-end gap-2">
+              <Badge className="gradient-gold border-0 px-3 py-1.5 text-gold-foreground capitalize shadow-[0_14px_30px_-18px_oklch(0.83_0.15_80)]">
+                {(data?.stats.accountType ?? user?.accountType ?? "prospect").replace("_", " ")}
+              </Badge>
+              <Badge
+                variant="outline"
+                className={`border-white/30 bg-white/10 ${
+                  user?.status === "banned" ? "text-destructive-foreground" : "text-primary-foreground"
+                }`}
+              >
+                Account Status: {user?.status === "banned" ? "Banned" : "Active"}
+              </Badge>
+            </div>
           </div>
           <div className="mt-5 grid grid-cols-3 gap-2 sm:gap-3">
             <div className="rounded-xl border border-white/20 bg-white/10 p-3">
@@ -432,6 +459,64 @@ function Dashboard() {
             <div className="rounded-2xl border border-border/40 bg-background/30 p-4 text-sm text-muted-foreground">
               Claimable milestones right now: {data?.rewardProgress.claimableMilestones.length ?? 0}
             </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Card className="glass border-border/40">
+          <CardContent className="space-y-2 p-5">
+            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <Trophy className="size-4 text-gold" /> Next Rank
+            </div>
+            {nextRankTier ? (
+              <>
+                <div className="text-lg font-semibold">{nextRankTier.name}</div>
+                <div className="text-sm text-muted-foreground">
+                  {riseCoinsToNextRank.toLocaleString()} Rise Coins to go
+                </div>
+              </>
+            ) : (
+              <div className="text-lg font-semibold">Highest Rank Achieved</div>
+            )}
+          </CardContent>
+        </Card>
+        <Card className="glass border-border/40">
+          <CardContent className="space-y-2 p-5">
+            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <GraduationCap className="size-4" /> Training Status
+            </div>
+            <div className="text-lg font-semibold">
+              {data?.trainingSeatConfirmed ? "Seat Confirmed" : "Not Confirmed Yet"}
+            </div>
+            {!data?.trainingSeatConfirmed ? (
+              <Link to="/courses" className="text-sm font-medium text-primary hover:underline">
+                Confirm your seat →
+              </Link>
+            ) : null}
+          </CardContent>
+        </Card>
+        <Card className="glass border-border/40">
+          <CardContent className="space-y-2 p-5">
+            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <ShieldCheck className="size-4" /> Deposit Status
+            </div>
+            <div className="text-lg font-semibold">
+              {pendingDeposit ? "Pending review" : "No pending deposits"}
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="glass border-border/40">
+          <CardContent className="space-y-2 p-5">
+            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <Wallet className="size-4" /> Withdrawal Status
+            </div>
+            <div className="text-lg font-semibold">
+              {formatCurrency(data?.stats.availableBalance ?? 0)} available
+            </div>
+            <Link to="/wallet" className="text-sm font-medium text-primary hover:underline">
+              View wallet →
+            </Link>
           </CardContent>
         </Card>
       </div>

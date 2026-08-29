@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ChevronDown, Copy, Share2, Users } from "lucide-react";
+import { ChevronDown, Copy, KeyRound, Share2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { pageTitle } from "@/lib/brand";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -93,6 +93,16 @@ function Referrals() {
     toast.success("Referral link copied!");
   };
 
+  const copyCode = async () => {
+    if (!data?.user.referralCode) {
+      toast.error("Referral code is not available yet.");
+      return;
+    }
+
+    await navigator.clipboard.writeText(data.user.referralCode);
+    toast.success("Referral code copied!");
+  };
+
   const indirectUsers =
     data?.summary.indirectUsers ??
     [...(data?.summary.level2Users ?? []), ...(data?.summary.level3Users ?? [])];
@@ -109,6 +119,29 @@ function Referrals() {
           team investments. Your current rank: {data?.rank.tier.title ?? "Starter"}.
         </p>
       </div>
+
+      <Card className="relative overflow-hidden border-0 bg-[linear-gradient(135deg,oklch(0.53_0.2_333),oklch(0.41_0.17_308))] text-primary-foreground shadow-[0_28px_60px_-32px_oklch(0.33_0.14_320/0.8)]">
+        <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-white/15 blur-2xl" />
+        <CardContent className="relative flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-medium">
+              <KeyRound className="size-3.5" /> Your Referral Code
+            </div>
+            <div className="mt-3 text-4xl font-black tracking-[0.08em]">
+              {data?.user.referralCode ?? "-----"}
+            </div>
+            <p className="mt-2 text-sm text-primary-foreground/85">
+              Share this code with friends so they can join under you directly.
+            </p>
+          </div>
+          <Button
+            onClick={copyCode}
+            className="gradient-gold border-0 text-gold-foreground shadow-[0_14px_30px_-18px_oklch(0.83_0.15_80)]"
+          >
+            <Copy className="mr-2 size-4" /> Copy Code
+          </Button>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="glass border-border/40">

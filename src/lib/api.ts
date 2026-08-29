@@ -24,7 +24,8 @@ export type AppUser = {
   sponsorReferralCode: string | null;
   referralLinkEnabled: boolean;
   referralLink: string | null;
-  accountType: "prospect" | "lucky_draw" | "investor" | "hybrid";
+  accountType: "investor";
+  status: "active" | "banned";
   walletBalance: number;
   createdAt: string;
   updatedAt: string;
@@ -110,6 +111,17 @@ export async function apiRequest<T>(
   }
 
   return data;
+}
+
+export async function changePassword(
+  token: string,
+  body: { currentPassword: string; newPassword: string },
+) {
+  return apiRequest<{ message: string }>("/user/password", {
+    method: "PUT",
+    token,
+    body,
+  });
 }
 
 export type CurrencyCode = "PKR" | "USD";

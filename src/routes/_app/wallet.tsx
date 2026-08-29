@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { apiRequest } from "@/lib/api";
 import { useAppAuth } from "@/lib/auth";
 import { useCurrency } from "@/lib/currency";
+import { getPaymentMethodIcon } from "@/lib/paymentMethodIcons";
 
 type WalletResponse = {
   balance: number;
@@ -30,8 +31,6 @@ type WalletResponse = {
     direction: "credit" | "debit";
     type:
       | "investment_commission"
-      | "lucky_draw_commission"
-      | "winner_reward"
       | "referral_commission"
       | "rise_coins_reward"
       | "withdrawal";
@@ -118,8 +117,8 @@ function WalletPage() {
       <div>
         <h1 className="text-3xl font-bold">Wallet</h1>
         <p className="text-muted-foreground">
-          Review your wallet balance, request withdrawals, and track credits from referrals,
-          rewards, and lucky draw wins.
+          Review your wallet balance, request withdrawals, and track credits from referrals and
+          rewards.
         </p>
       </div>
 
@@ -242,21 +241,34 @@ function WalletPage() {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Account type</label>
-                <select
-                  value={accountType}
-                  onChange={(event) =>
-                    setAccountType(
-                      event.target.value as "easypaisa" | "jazzcash" | "bank_transfer" | "binance",
-                    )
-                  }
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  required
-                >
-                  <option value="easypaisa">EasyPaisa</option>
-                  <option value="jazzcash">JazzCash</option>
-                  <option value="bank_transfer">Bank Transfer</option>
-                  <option value="binance">Binance</option>
-                </select>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {(
+                    [
+                      { value: "easypaisa", label: "EasyPaisa" },
+                      { value: "jazzcash", label: "JazzCash" },
+                      { value: "bank_transfer", label: "Bank Transfer" },
+                      { value: "binance", label: "Binance" },
+                    ] as const
+                  ).map((option) => {
+                    const Icon = getPaymentMethodIcon(option.value);
+                    const isSelected = accountType === option.value;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setAccountType(option.value)}
+                        className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-left text-sm font-medium transition-colors ${
+                          isSelected
+                            ? "border-primary bg-primary/10 text-foreground"
+                            : "border-input bg-background text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        <Icon className="size-4 shrink-0" />
+                        <span className="truncate">{option.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {accountType === "bank_transfer" ? (
@@ -346,7 +358,11 @@ function WalletPage() {
                         Net {formatCurrency(withdrawal.netAmount)} after{" "}
                         {formatCurrency(withdrawal.taxAmount)} tax
                       </div>
-                      <div className="mt-1 text-sm text-muted-foreground">
+                      <div className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
+                        {(() => {
+                          const Icon = getPaymentMethodIcon(withdrawal.accountType);
+                          return <Icon className="size-3.5 shrink-0" />;
+                        })()}
                         {formatWithdrawalAccountType(withdrawal.accountType)}:{" "}
                         {withdrawal.accountDetails || "-"}
                       </div>
@@ -491,10 +507,6 @@ function formatTransactionType(type: WalletResponse["transactions"][number]["typ
   switch (type) {
     case "investment_commission":
       return "Investment commission";
-    case "lucky_draw_commission":
-      return "Lucky draw commission";
-    case "winner_reward":
-      return "Winner reward";
     case "referral_commission":
       return "Referral commission";
     case "rise_coins_reward":
