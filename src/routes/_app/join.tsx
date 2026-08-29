@@ -1,12 +1,23 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowRight, Coins, Gift, ShieldCheck, TrendingUp, Users } from "lucide-react";
-import { apiRequest, formatCurrency, type AppUser } from "@/lib/api";
+import { apiRequest, type AppUser } from "@/lib/api";
 import { pageTitle } from "@/lib/brand";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAppAuth } from "@/lib/auth";
+import { useCurrency } from "@/lib/currency";
+
+type PaymentMethod = {
+  id: string;
+  type: "easypaisa" | "jazzcash" | "bank" | "binance";
+  label: string;
+  accountNumber: string;
+  accountHolderName: string;
+  extraInstructions: string;
+  active: boolean;
+};
 
 type JoinOptionsResponse = {
   user: AppUser;
@@ -14,24 +25,19 @@ type JoinOptionsResponse = {
     id: string;
     name: string;
     price: number;
-    points: number;
+    riseCoins: number;
     benefits: string[];
     featured?: boolean;
   }>;
   settings: {
-    paymentDetails: {
-      accountName: string;
-      accountNumber: string;
-      bankName: string;
-      instructions: string;
-    };
+    paymentMethods: PaymentMethod[];
     referralRules: {
       level1Percent: number;
       level2Percent: number;
       level3Percent: number;
     };
     rewardMilestones: Array<{
-      pointsRequired: number;
+      riseCoinsRequired: number;
       rewardAmount: number;
       title: string;
     }>;
@@ -53,6 +59,7 @@ export const Route = createFileRoute("/_app/join")({
 
 function JoinOptionsPage() {
   const { token } = useAppAuth();
+  const { format: formatCurrency } = useCurrency();
   const [data, setData] = useState<JoinOptionsResponse | null>(null);
 
   useEffect(() => {
@@ -67,9 +74,9 @@ function JoinOptionsPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold">Join Nexo Women Earning System</h1>
+          <h1 className="text-3xl font-bold">Join NexoRise</h1>
           <p className="text-muted-foreground">
-            Start with an investment plan, earn fixed points, unlock reward ranks, and build your
+            Start with an investment plan, earn fixed Rise Coins, unlock reward ranks, and build your
             team with a 3-step referral structure.
           </p>
         </div>
@@ -88,7 +95,7 @@ function JoinOptionsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="text-muted-foreground">
-              Every approved plan adds points to your rank journey and activates team income on the
+              Every approved plan adds Rise Coins to your rank journey and activates team income on the
               {` ${data?.settings.referralRules.level1Percent ?? 30}% / ${data?.settings.referralRules.level2Percent ?? 15}% / ${data?.settings.referralRules.level3Percent ?? 5}% `}
               structure.
             </div>
@@ -102,7 +109,7 @@ function JoinOptionsPage() {
                 >
                   <div className="font-semibold">{plan.name}</div>
                   <div className="mt-1 text-xl font-bold">{formatCurrency(plan.price)}</div>
-                  <div className="text-sm font-semibold text-gold">{plan.points} points</div>
+                  <div className="text-sm font-semibold text-gold">{plan.riseCoins} Rise Coins</div>
                 </div>
               ))}
             </div>
@@ -163,13 +170,13 @@ function JoinOptionsPage() {
           <CardContent className="space-y-3">
             {(data?.settings.rewardMilestones ?? []).map((milestone) => (
               <div
-                key={milestone.pointsRequired}
+                key={milestone.riseCoinsRequired}
                 className="flex items-center justify-between gap-3 rounded-2xl border border-border/40 bg-background/35 p-4"
               >
                 <div>
                   <div className="font-semibold">{milestone.title}</div>
                   <div className="text-sm text-muted-foreground">
-                    {milestone.pointsRequired.toLocaleString()} points
+                    {milestone.riseCoinsRequired.toLocaleString()} Rise Coins
                   </div>
                 </div>
                 <div className="text-lg font-bold text-success">
@@ -212,16 +219,33 @@ function JoinOptionsPage() {
 
       <Card className="glass border-border/40">
         <CardHeader>
-          <CardTitle>Manual Payment Details</CardTitle>
+          <CardTitle>Manual Payment Methods</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-2">
-          <Info label="Account title" value={data?.settings.paymentDetails.accountName ?? "-"} />
-          <Info
-            label="Account number"
-            value={data?.settings.paymentDetails.accountNumber ?? "-"}
-          />
-          <Info label="Bank name" value={data?.settings.paymentDetails.bankName ?? "-"} />
-          <Info label="Instructions" value={data?.settings.paymentDetails.instructions ?? "-"} />
+          {data?.settings.paymentMethods.filter((method) => method.active).length ? (
+            data.settings.paymentMethods
+              .filter((method) => method.active)
+              .map((method) => (
+                <div
+                  key={method.id}
+                  className="rounded-2xl border border-border/40 bg-background/35 p-4"
+                >
+                  <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                    {method.label}
+                  </div>
+                  <div className="mt-2 text-sm font-semibold">
+                    {method.accountNumber} · {method.accountHolderName}
+                  </div>
+                  {method.extraInstructions ? (
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      {method.extraInstructions}
+                    </div>
+                  ) : null}
+                </div>
+              ))
+          ) : (
+            <Info label="Payment methods" value="No active payment methods configured yet." />
+          )}
         </CardContent>
       </Card>
     </div>

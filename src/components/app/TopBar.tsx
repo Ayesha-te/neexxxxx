@@ -15,12 +15,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { appNavItems } from "@/components/app/appNavItems";
 import { useAppAuth } from "@/lib/auth";
+import { useCurrency } from "@/lib/currency";
 import { cn } from "@/lib/utils";
 
 export function TopBar() {
   const [dark, setDark] = useState(false);
   const path = useRouterState({ select: (state) => state.location.pathname });
   const { user, logout } = useAppAuth();
+  const { currency, toggle: toggleCurrency } = useCurrency();
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
@@ -77,6 +79,15 @@ export function TopBar() {
         />
       </div>
       <div className="ml-auto flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={toggleCurrency}
+          className="font-semibold"
+          aria-label="Toggle currency"
+        >
+          {currency}
+        </Button>
         <Button
           variant="ghost"
           size="icon"

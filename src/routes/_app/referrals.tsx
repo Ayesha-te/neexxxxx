@@ -1,13 +1,27 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Copy, Share2, Users } from "lucide-react";
+import { ChevronDown, Copy, Share2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { pageTitle } from "@/lib/brand";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { apiRequest, formatCurrency, type AppUser } from "@/lib/api";
+import { apiRequest, type AppUser } from "@/lib/api";
 import { useAppAuth } from "@/lib/auth";
+import { useCurrency } from "@/lib/currency";
+
+type TeamMember = {
+  id: string;
+  name: string;
+  email: string;
+  accountType: string;
+  joinedAt: string;
+  totalRiseCoins: number;
+  activeInvestmentValue: number;
+  rankTitle?: string;
+  status?: "active" | "inactive";
+};
 
 type ReferralsResponse = {
   user: AppUser;
@@ -17,17 +31,17 @@ type ReferralsResponse = {
     level3Percent: number;
   };
   rank: {
-    totalPoints: number;
-    personalPoints: number;
-    referralPoints: number;
+    totalRiseCoins: number;
+    personalRiseCoins: number;
+    referralRiseCoins: number;
     referralBreakdown: {
-      level1Points: number;
-      level2Points: number;
-      level3Points: number;
+      level1RiseCoins: number;
+      level2RiseCoins: number;
+      level3RiseCoins: number;
     };
     tier: {
       title: string;
-      pointsRequired: number;
+      riseCoinsRequired: number;
       directPercent: number;
       indirectPercent: number;
       teamPercent: number;
@@ -42,15 +56,10 @@ type ReferralsResponse = {
     level1: number;
     level2: number;
     level3: number;
-    directUsers: Array<{
-      id: string;
-      name: string;
-      email: string;
-      accountType: string;
-      joinedAt: string;
-      totalPoints: number;
-      activeInvestmentValue: number;
-    }>;
+    directUsers: TeamMember[];
+    level2Users?: TeamMember[];
+    level3Users?: TeamMember[];
+    indirectUsers?: TeamMember[];
   };
 };
 
@@ -61,7 +70,10 @@ export const Route = createFileRoute("/_app/referrals")({
 
 function Referrals() {
   const { token } = useAppAuth();
+  const { format: formatCurrency } = useCurrency();
   const [data, setData] = useState<ReferralsResponse | null>(null);
+  const [teamView, setTeamView] = useState<"direct" | "indirect">("direct");
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -81,6 +93,11 @@ function Referrals() {
     toast.success("Referral link copied!");
   };
 
+  const indirectUsers =
+    data?.summary.indirectUsers ??
+    [...(data?.summary.level2Users ?? []), ...(data?.summary.level3Users ?? [])];
+  const activeTeamList = teamView === "direct" ? data?.summary.directUsers ?? [] : indirectUsers;
+
   return (
     <div className="space-y-6">
       <div>
@@ -96,20 +113,20 @@ function Referrals() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="glass border-border/40">
           <CardContent className="space-y-1 p-5">
-            <div className="text-xs uppercase text-muted-foreground">Total points</div>
-            <div className="text-3xl font-bold">{(data?.rank.totalPoints ?? 0).toLocaleString()}</div>
+            <div className="text-xs uppercase text-muted-foreground">Total Rise Coins</div>
+            <div className="text-3xl font-bold">{(data?.rank.totalRiseCoins ?? 0).toLocaleString()}</div>
           </CardContent>
         </Card>
         <Card className="glass border-border/40">
           <CardContent className="space-y-1 p-5">
-            <div className="text-xs uppercase text-muted-foreground">Your plan points</div>
-            <div className="text-3xl font-bold">{(data?.rank.personalPoints ?? 0).toLocaleString()}</div>
+            <div className="text-xs uppercase text-muted-foreground">Your plan Rise Coins</div>
+            <div className="text-3xl font-bold">{(data?.rank.personalRiseCoins ?? 0).toLocaleString()}</div>
           </CardContent>
         </Card>
         <Card className="glass border-border/40">
           <CardContent className="space-y-1 p-5">
-            <div className="text-xs uppercase text-muted-foreground">Referral points</div>
-            <div className="text-3xl font-bold">{(data?.rank.referralPoints ?? 0).toLocaleString()}</div>
+            <div className="text-xs uppercase text-muted-foreground">Referral Rise Coins</div>
+            <div className="text-3xl font-bold">{(data?.rank.referralRiseCoins ?? 0).toLocaleString()}</div>
           </CardContent>
         </Card>
         <Card className="glass border-border/40">
@@ -189,45 +206,92 @@ function Referrals() {
       </div>
 
       <Card className="glass border-border/40">
-        <CardHeader>
-          <CardTitle>Direct Referrals</CardTitle>
+        <CardHeader
+          className="cursor-pointer select-none"
+          onClick={() => setExpanded((value) => !value)}
+        >
+          <div className="flex items-center justify-between">
+            <CardTitle>All Team</CardTitle>
+            <ChevronDown
+              className={`size-5 text-muted-foreground transition-transform ${expanded ? "rotate-180" : ""}`}
+            />
+          </div>
         </CardHeader>
-        <CardContent className="space-y-3">
-          {data?.summary.directUsers.length ? (
-            data.summary.directUsers.map((referral) => (
-              <div
-                key={referral.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/40 bg-background/35 p-4"
+        {expanded ? (
+          <CardContent className="space-y-4">
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant={teamView === "direct" ? "default" : "outline"}
+                size="sm"
+                className={teamView === "direct" ? "gradient-primary text-primary-foreground" : ""}
+                onClick={() => setTeamView("direct")}
               >
-                <div>
-                  <div className="font-semibold">{referral.name}</div>
-                  <div className="text-sm text-muted-foreground">{referral.email}</div>
-                  <div className="mt-2 text-xs text-muted-foreground capitalize">
-                    {referral.accountType.replace("_", " ")}
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-semibold">
-                    {formatCurrency(referral.activeInvestmentValue)}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {referral.totalPoints.toLocaleString()} points
-                  </div>
-                  <div className="mt-1 text-xs text-muted-foreground">
-                    Joined{" "}
-                    {new Date(referral.joinedAt).toLocaleDateString("en-PK", {
-                      dateStyle: "medium",
-                    })}
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="text-sm text-muted-foreground">
-              No direct referrals yet. Share your link to start building your team.
+                Direct Team ({data?.summary.level1 ?? 0})
+              </Button>
+              <Button
+                type="button"
+                variant={teamView === "indirect" ? "default" : "outline"}
+                size="sm"
+                className={teamView === "indirect" ? "gradient-primary text-primary-foreground" : ""}
+                onClick={() => setTeamView("indirect")}
+              >
+                Indirect Team ({(data?.summary.level2 ?? 0) + (data?.summary.level3 ?? 0)})
+              </Button>
             </div>
-          )}
-        </CardContent>
+
+            <div className="space-y-3">
+              {activeTeamList.length ? (
+                activeTeamList.map((referral) => (
+                  <div
+                    key={referral.id}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/40 bg-background/35 p-4"
+                  >
+                    <div>
+                      <div className="font-semibold">{referral.name}</div>
+                      <div className="text-sm text-muted-foreground">{referral.email}</div>
+                      <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                        <span className="capitalize">{referral.rankTitle ?? "Starter"}</span>
+                        {referral.status ? (
+                          <Badge
+                            variant="outline"
+                            className={`capitalize ${
+                              referral.status === "active"
+                                ? "border-success/30 text-success"
+                                : "border-muted-foreground/30"
+                            }`}
+                          >
+                            {referral.status}
+                          </Badge>
+                        ) : null}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-semibold">
+                        {formatCurrency(referral.activeInvestmentValue)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {referral.totalRiseCoins.toLocaleString()} Rise Coins
+                      </div>
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        Joined{" "}
+                        {new Date(referral.joinedAt).toLocaleDateString("en-PK", {
+                          dateStyle: "medium",
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-sm text-muted-foreground">
+                  {teamView === "direct"
+                    ? "No direct referrals yet. Share your link to start building your team."
+                    : "No indirect (level 2/3) team members yet."}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        ) : null}
       </Card>
     </div>
   );

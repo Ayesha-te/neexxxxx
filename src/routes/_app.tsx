@@ -4,13 +4,16 @@ import { TopBar } from "@/components/app/TopBar";
 import { MobileNav } from "@/components/app/MobileNav";
 import { Toaster } from "@/components/ui/sonner";
 import { AppAuthProvider, useAppAuth } from "@/lib/auth";
+import { CurrencyProvider } from "@/lib/currency";
 
 export const Route = createFileRoute("/_app")({ component: AppShell });
 
 function AppShell() {
   return (
     <AppAuthProvider>
-      <AppLayout />
+      <CurrencyProvider>
+        <AppLayout />
+      </CurrencyProvider>
     </AppAuthProvider>
   );
 }

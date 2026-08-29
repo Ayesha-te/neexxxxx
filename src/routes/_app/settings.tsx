@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Phone, Mail, MapPin, Send } from "lucide-react";
+import { Phone, Mail, MapPin, Send, MessageCircle } from "lucide-react";
 import { pageTitle } from "@/lib/brand";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ type SiteInfoResponse = {
     email: string;
     location: string;
   };
+  adminWhatsApp?: string;
 };
 
 export const Route = createFileRoute("/_app/settings")({
@@ -77,6 +78,7 @@ function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="flex items-center gap-4">
+              {/* Profile picture upload is disabled until paid hosting is available; showing initials avatar only. */}
               <Avatar className="size-20 ring-2 ring-gold/40">
                 <AvatarFallback className="gradient-primary text-xl text-primary-foreground">
                   {initials}
@@ -175,6 +177,18 @@ function SettingsPage() {
             <CardTitle>Contact Us</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <a
+              href={`https://wa.me/${(siteInfo?.adminWhatsApp ?? "923057410110").replace(/[^0-9]/g, "")}`}
+              target="_blank"
+              rel="noreferrer"
+              className="block"
+            >
+              <ContactInfo
+                icon={MessageCircle}
+                label="Admin WhatsApp"
+                value={siteInfo?.adminWhatsApp ?? "+92 305 7410110"}
+              />
+            </a>
             <ContactInfo
               icon={Phone}
               label="Phone"
@@ -182,13 +196,13 @@ function SettingsPage() {
             />
             <ContactInfo
               icon={Phone}
-              label="Phone"
-              value={siteInfo?.contactDetails.phone2 ?? "03057410110"}
+              label="Contact Number"
+              value="+92 320 7598146"
             />
             <ContactInfo
               icon={Mail}
-              label="Email"
-              value={siteInfo?.contactDetails.email ?? "sardarlaeiq786@gmail.com"}
+              label="Official Email"
+              value="nexorise333@gmail.com"
             />
             <ContactInfo
               icon={MapPin}

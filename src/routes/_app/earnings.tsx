@@ -4,13 +4,14 @@ import { useEffect, useState } from "react";
 import { pageTitle } from "@/lib/brand";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { apiRequest, formatCurrency } from "@/lib/api";
+import { apiRequest } from "@/lib/api";
 import { useAppAuth } from "@/lib/auth";
+import { useCurrency } from "@/lib/currency";
 
 type DashboardResponse = {
   stats: {
     totalInvestment: number;
-    totalPoints: number;
+    totalRiseCoins: number;
     walletBalance: number;
     availableBalance: number;
     totalCommissionEarned: number;
@@ -24,23 +25,23 @@ type DashboardResponse = {
     plan: {
       name: string;
       price: number;
-      points: number;
+      riseCoins: number;
       level1Percent: number;
       level2Percent: number;
       level3Percent: number;
     } | null;
     metrics: {
-      points: number;
+      riseCoins: number;
     } | null;
   }>;
   rewardProgress: {
-    totalPoints: number;
+    totalRiseCoins: number;
     totalClaimedRewardValue: number;
     nextMilestone: {
       title: string;
-      pointsRequired: number;
+      riseCoinsRequired: number;
       rewardAmount: number;
-      remainingPoints: number;
+      remainingRiseCoins: number;
     } | null;
   };
 };
@@ -64,17 +65,17 @@ type JoinOptionsResponse = {
 };
 
 type ReferralRankResponse = {
-  totalPoints: number;
-  personalPoints: number;
-  referralPoints: number;
+  totalRiseCoins: number;
+  personalRiseCoins: number;
+  referralRiseCoins: number;
   referralBreakdown: {
-    level1Points: number;
-    level2Points: number;
-    level3Points: number;
+    level1RiseCoins: number;
+    level2RiseCoins: number;
+    level3RiseCoins: number;
   };
   tier: {
     title: string;
-    pointsRequired: number;
+    riseCoinsRequired: number;
     directPercent: number;
     indirectPercent: number;
     teamPercent: number;
@@ -93,6 +94,7 @@ export const Route = createFileRoute("/_app/earnings")({
 
 function Earnings() {
   const { token } = useAppAuth();
+  const { format: formatCurrency } = useCurrency();
   const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
   const [joinData, setJoinData] = useState<JoinOptionsResponse | null>(null);
   const [referralRank, setReferralRank] = useState<ReferralRankResponse | null>(null);
@@ -121,7 +123,7 @@ function Earnings() {
       <div>
         <h1 className="text-3xl font-bold">Earning System</h1>
         <p className="text-muted-foreground">
-          Approved plans add personal points, referral team activity adds team points, and your
+          Approved plans add personal Rise Coins, referral team activity adds team Rise Coins, and your
           combined total unlocks real rank levels with 3-step referral income.
         </p>
       </div>
@@ -135,9 +137,9 @@ function Earnings() {
         />
         <StatCard
           icon={Target}
-          label="Points collected"
-          value={(dashboard?.stats.totalPoints ?? 0).toLocaleString()}
-          hint="Personal + referral team points"
+          label="Rise Coins collected"
+          value={(dashboard?.stats.totalRiseCoins ?? 0).toLocaleString()}
+          hint="Personal + referral team Rise Coins"
         />
         <StatCard
           icon={Coins}
@@ -161,7 +163,7 @@ function Earnings() {
           <CardContent className="grid gap-3 sm:grid-cols-2">
             <RuleCard
               label="Plan activation"
-              value="Every approved plan adds fixed personal points to your account."
+              value="Every approved plan adds fixed personal Rise Coins to your account."
             />
             <RuleCard
               label="Team commissions"
@@ -173,11 +175,11 @@ function Earnings() {
             />
             <RuleCard
               label="Your referral rank"
-              value={`${referralRank?.tier.title ?? "Starter"} • ${(referralRank?.totalPoints ?? 0).toLocaleString()} points`}
+              value={`${referralRank?.tier.title ?? "Starter"} • ${(referralRank?.totalRiseCoins ?? 0).toLocaleString()} Rise Coins`}
             />
             <RuleCard
-              label="Points formula"
-              value={`${(referralRank?.personalPoints ?? 0).toLocaleString()} personal + ${(referralRank?.referralPoints ?? 0).toLocaleString()} referral points`}
+              label="Rise Coins formula"
+              value={`${(referralRank?.personalRiseCoins ?? 0).toLocaleString()} personal + ${(referralRank?.referralRiseCoins ?? 0).toLocaleString()} referral Rise Coins`}
             />
             <RuleCard
               label="Reward claims"
@@ -209,17 +211,17 @@ function Earnings() {
                     {dashboard.rewardProgress.nextMilestone.title}
                   </div>
                   <div className="mt-2 text-sm text-muted-foreground">
-                    {dashboard.rewardProgress.nextMilestone.pointsRequired.toLocaleString()} points
+                    {dashboard.rewardProgress.nextMilestone.riseCoinsRequired.toLocaleString()} Rise Coins
                     {" | "}
                     {formatCurrency(dashboard.rewardProgress.nextMilestone.rewardAmount)}
                   </div>
                 </div>
                 <div className="rounded-2xl border border-border/40 bg-background/30 p-4">
                   <div className="text-sm text-muted-foreground">
-                    Remaining points to unlock this rank reward
+                    Remaining Rise Coins to unlock this rank reward
                   </div>
                   <div className="mt-2 text-3xl font-bold">
-                    {dashboard.rewardProgress.nextMilestone.remainingPoints.toLocaleString()}
+                    {dashboard.rewardProgress.nextMilestone.remainingRiseCoins.toLocaleString()}
                   </div>
                 </div>
               </>
@@ -252,7 +254,7 @@ function Earnings() {
                     <div className="text-lg font-semibold">{item.plan?.name ?? "Plan"}</div>
                     <div className="text-sm text-muted-foreground">
                       {item.plan
-                        ? `${formatCurrency(item.plan.price)} | ${item.plan.points} points`
+                        ? `${formatCurrency(item.plan.price)} | ${item.plan.riseCoins} Rise Coins`
                         : "Plan details unavailable"}
                     </div>
                     <div className="mt-2 text-xs text-muted-foreground">
@@ -276,8 +278,8 @@ function Earnings() {
                 </div>
                 <div className="mt-4 grid gap-3 md:grid-cols-3">
                   <Metric
-                    label="Plan points"
-                    value={String(item.metrics?.points ?? item.plan?.points ?? 0)}
+                    label="Plan Rise Coins"
+                    value={String(item.metrics?.riseCoins ?? item.plan?.riseCoins ?? 0)}
                   />
                   <Metric
                     label="Referral unlock"
@@ -293,14 +295,14 @@ function Earnings() {
                   />
                   <Metric
                     label="Reward impact"
-                    value={`${(item.metrics?.points ?? item.plan?.points ?? 0).toLocaleString()} points added`}
+                    value={`${(item.metrics?.riseCoins ?? item.plan?.riseCoins ?? 0).toLocaleString()} Rise Coins added`}
                   />
                 </div>
               </div>
             ))
           ) : (
             <div className="text-sm text-muted-foreground">
-              No plan activity yet. Approving a plan is what starts the points and referral-income
+              No plan activity yet. Approving a plan is what starts the Rise Coins and referral-income
               journey.
             </div>
           )}

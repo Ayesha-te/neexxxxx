@@ -8,8 +8,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { apiRequest, formatCurrency } from "@/lib/api";
+import { apiRequest } from "@/lib/api";
 import { useAppAuth } from "@/lib/auth";
+import { useCurrency } from "@/lib/currency";
+
+type PaymentMethod = {
+  id: string;
+  type: "easypaisa" | "jazzcash" | "bank" | "binance";
+  label: string;
+  accountNumber: string;
+  accountHolderName: string;
+  extraInstructions: string;
+  active: boolean;
+};
+
+type SiteInfoResponse = {
+  paymentMethods: PaymentMethod[];
+};
 
 type InvestmentsResponse = {
   items: Array<{
@@ -20,7 +35,7 @@ type InvestmentsResponse = {
       id: string;
       name: string;
       price: number;
-      points: number;
+      riseCoins: number;
       benefits: string[];
       featured?: boolean;
     } | null;
@@ -37,7 +52,7 @@ type InvestmentsResponse = {
     id: string;
     name: string;
     price: number;
-    points: number;
+    riseCoins: number;
     level1Percent: number;
     level2Percent: number;
     level3Percent: number;
@@ -48,12 +63,6 @@ type InvestmentsResponse = {
 
 type JoinOptionsResponse = {
   settings: {
-    paymentDetails: {
-      accountName: string;
-      accountNumber: string;
-      bankName: string;
-      instructions: string;
-    };
     referralRules: {
       level1Percent: number;
       level2Percent: number;
@@ -69,10 +78,15 @@ export const Route = createFileRoute("/_app/plans")({
 
 function Plans() {
   const { token } = useAppAuth();
+  const { format: formatCurrency } = useCurrency();
   const [data, setData] = useState<InvestmentsResponse | null>(null);
   const [joinData, setJoinData] = useState<JoinOptionsResponse | null>(null);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [selectedPlanId, setSelectedPlanId] = useState("");
+  const [selectedMethodType, setSelectedMethodType] = useState<PaymentMethod["type"] | "">("");
   const [manualTransactionId, setManualTransactionId] = useState("");
+  const [payerAccountNumber, setPayerAccountNumber] = useState("");
+  const [payerAccountHolderName, setPayerAccountHolderName] = useState("");
   const [proofNote, setProofNote] = useState("");
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -83,13 +97,15 @@ function Plans() {
       return;
     }
 
-    const [investments, joinOptions] = await Promise.all([
+    const [investments, joinOptions, siteInfo] = await Promise.all([
       apiRequest<InvestmentsResponse>("/user/investments", { token }),
       apiRequest<JoinOptionsResponse>("/user/join-options", { token }),
+      apiRequest<SiteInfoResponse>("/public/site-info"),
     ]);
 
     setData(investments);
     setJoinData(joinOptions);
+    setPaymentMethods(siteInfo.paymentMethods.filter((method) => method.active));
   };
 
   useEffect(() => {
@@ -97,6 +113,7 @@ function Plans() {
   }, [token]);
 
   const selectedPlan = data?.plans.find((plan) => plan.id === selectedPlanId) ?? null;
+  const selectedMethod = paymentMethods.find((method) => method.type === selectedMethodType) ?? null;
   const latestPlanStatuses = useMemo(() => {
     const statuses = new Map<string, string>();
 
@@ -115,24 +132,9 @@ function Plans() {
         <h1 className="text-3xl font-bold">Women Earning Plans</h1>
         <p className="text-muted-foreground">
           Submit your manual payment, wait for admin approval, and the system will add fixed plan
-          points plus 3-step referral commissions automatically.
+          Rise Coins plus 3-step referral commissions automatically.
         </p>
       </div>
-
-      <Card className="glass border-border/40">
-        <CardHeader>
-          <CardTitle>Admin Payment Details</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-2">
-          <Info label="Account title" value={joinData?.settings.paymentDetails.accountName ?? "-"} />
-          <Info
-            label="Account number"
-            value={joinData?.settings.paymentDetails.accountNumber ?? "-"}
-          />
-          <Info label="Bank name" value={joinData?.settings.paymentDetails.bankName ?? "-"} />
-          <Info label="Instructions" value={joinData?.settings.paymentDetails.instructions ?? "-"} />
-        </CardContent>
-      </Card>
 
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {data?.plans.map((plan) => (
@@ -154,7 +156,7 @@ function Plans() {
                 </div>
                 <div className="mt-1 text-3xl font-bold">{formatCurrency(plan.price)}</div>
                 <div className="mt-1 text-sm font-semibold text-gradient-gold">
-                  {plan.points} points on approval
+                  {plan.riseCoins} Rise Coins on approval
                 </div>
                 <div className="mt-1 text-xs text-muted-foreground">
                   Step income: {plan.level1Percent}% / {plan.level2Percent}% / {plan.level3Percent}%
@@ -201,7 +203,7 @@ function Plans() {
             </div>
             <div className="mt-2 text-sm text-muted-foreground">
               {selectedPlan
-                ? `${formatCurrency(selectedPlan.price)} | ${selectedPlan.points} points`
+                ? `${formatCurrency(selectedPlan.price)} | ${selectedPlan.riseCoins} Rise Coins`
                 : "Choose a plan card first. The plan will only start after admin verifies your deposit."}
             </div>
             <div className="mt-4 rounded-xl border border-border/40 bg-background/45 p-3">
@@ -220,13 +222,46 @@ function Plans() {
                   ? `${joinData.settings.referralRules.level1Percent}% / ${joinData.settings.referralRules.level2Percent}% / ${joinData.settings.referralRules.level3Percent}%`
                 : "48% / 18% / 10%"}
             </div>
+
+            <div className="mt-6 space-y-2">
+              <label className="text-sm font-medium">Pay to which account?</label>
+              <select
+                value={selectedMethodType}
+                onChange={(event) =>
+                  setSelectedMethodType(event.target.value as PaymentMethod["type"] | "")
+                }
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                required
+              >
+                <option value="">Select a payment method</option>
+                {paymentMethods.map((method) => (
+                  <option key={method.id} value={method.type}>
+                    {method.label}
+                  </option>
+                ))}
+              </select>
+              {selectedMethod ? (
+                <div className="rounded-xl border border-border/40 bg-background/45 p-3 text-sm">
+                  <div className="font-semibold">{selectedMethod.label}</div>
+                  <div className="mt-1 text-muted-foreground">
+                    Account: {selectedMethod.accountNumber} ({selectedMethod.accountHolderName})
+                  </div>
+                  {selectedMethod.extraInstructions ? (
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      {selectedMethod.extraInstructions}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
           </div>
 
           <form
             className="space-y-4"
             onSubmit={async (event) => {
               event.preventDefault();
-              if (!token || !selectedPlan) {
+              if (!token || !selectedPlan || !selectedMethodType) {
+                toast.error("Choose a plan and a payment method first.");
                 return;
               }
 
@@ -235,7 +270,18 @@ function Plans() {
                 const formData = new FormData();
                 formData.set("planId", selectedPlan.id);
                 formData.set("manualTransactionId", manualTransactionId);
-                formData.set("proofNote", proofNote);
+                formData.set("paymentMethodType", selectedMethodType);
+                formData.set("payerAccountNumber", payerAccountNumber);
+                formData.set("payerAccountHolderName", payerAccountHolderName);
+                formData.set(
+                  "proofNote",
+                  [
+                    proofNote,
+                    `Paid via ${selectedMethod?.label ?? selectedMethodType} from ${payerAccountNumber} (${payerAccountHolderName})`,
+                  ]
+                    .filter(Boolean)
+                    .join(" | "),
+                );
                 if (proofFile) {
                   formData.set("proofFile", proofFile);
                 }
@@ -247,7 +293,10 @@ function Plans() {
                 });
                 toast.success("Deposit submitted. Admin can now review it and activate the plan.");
                 setSelectedPlanId("");
+                setSelectedMethodType("");
                 setManualTransactionId("");
+                setPayerAccountNumber("");
+                setPayerAccountHolderName("");
                 setProofNote("");
                 setProofFile(null);
                 if (proofFileInputRef.current) {
@@ -261,6 +310,28 @@ function Plans() {
               }
             }}
           >
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Amount</label>
+              <Input readOnly value={selectedPlan ? formatCurrency(selectedPlan.price) : ""} />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Your account number (paid from)</label>
+              <Input
+                value={payerAccountNumber}
+                onChange={(event) => setPayerAccountNumber(event.target.value)}
+                placeholder="Number or account you paid from"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Account holder name</label>
+              <Input
+                value={payerAccountHolderName}
+                onChange={(event) => setPayerAccountHolderName(event.target.value)}
+                placeholder="Name on the paying account"
+                required
+              />
+            </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Transaction ID</label>
               <Input
@@ -288,7 +359,7 @@ function Plans() {
               <Textarea
                 value={proofNote}
                 onChange={(event) => setProofNote(event.target.value)}
-                placeholder="Optional note about the payment time, method, or sender account."
+                placeholder="Optional note about the payment time or method."
                 className="min-h-28"
               />
               <div className="text-xs text-muted-foreground">
@@ -297,7 +368,7 @@ function Plans() {
             </div>
             <Button
               type="submit"
-              disabled={submitting || !selectedPlan}
+              disabled={submitting || !selectedPlan || !selectedMethodType}
               className="gradient-primary text-primary-foreground"
             >
               {submitting ? "Submitting..." : "Send Deposit for Approval"}
@@ -325,7 +396,9 @@ function Plans() {
                       })}
                     </div>
                     <div className="mt-1 text-xs text-muted-foreground">
-                      {item.plan ? `${formatCurrency(item.plan.price)} | ${item.plan.points} points` : ""}
+                      {item.plan
+                        ? `${formatCurrency(item.plan.price)} | ${item.plan.riseCoins} Rise Coins`
+                        : ""}
                     </div>
                     {item.payment?.proofFileUrl ? (
                       <a
@@ -349,15 +422,6 @@ function Plans() {
           )}
         </CardContent>
       </Card>
-    </div>
-  );
-}
-
-function Info({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-2xl border border-border/40 bg-background/35 p-4">
-      <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{label}</div>
-      <div className="mt-2 text-sm font-semibold">{value}</div>
     </div>
   );
 }

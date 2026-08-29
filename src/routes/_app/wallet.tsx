@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { apiRequest, formatCurrency } from "@/lib/api";
+import { apiRequest } from "@/lib/api";
 import { useAppAuth } from "@/lib/auth";
+import { useCurrency } from "@/lib/currency";
 
 type WalletResponse = {
   balance: number;
@@ -32,7 +33,7 @@ type WalletResponse = {
       | "lucky_draw_commission"
       | "winner_reward"
       | "referral_commission"
-      | "points_reward"
+      | "rise_coins_reward"
       | "withdrawal";
     description: string;
     referenceId: string | null;
@@ -45,7 +46,7 @@ type WalletResponse = {
     taxPercent: number;
     taxAmount: number;
     netAmount: number;
-    accountType: "easypaisa" | "jazzcash" | "bank_transfer";
+    accountType: "easypaisa" | "jazzcash" | "bank_transfer" | "binance";
     accountDetails: string;
     status: "pending" | "approved" | "rejected";
     note: string;
@@ -56,6 +57,8 @@ type WalletResponse = {
   }>;
 };
 
+const BANK_SUB_TYPES = ["Pesa", "Adapay", "UPaisa", "Other bank"] as const;
+
 export const Route = createFileRoute("/_app/wallet")({
   head: () => ({ meta: [{ title: pageTitle("Wallet") }] }),
   component: WalletPage,
@@ -63,11 +66,14 @@ export const Route = createFileRoute("/_app/wallet")({
 
 function WalletPage() {
   const { token } = useAppAuth();
+  const { format: formatCurrency } = useCurrency();
   const [data, setData] = useState<WalletResponse | null>(null);
   const [amount, setAmount] = useState("");
-  const [accountType, setAccountType] = useState<"easypaisa" | "jazzcash" | "bank_transfer">(
-    "easypaisa",
-  );
+  const [accountType, setAccountType] = useState<
+    "easypaisa" | "jazzcash" | "bank_transfer" | "binance"
+  >("easypaisa");
+  const [bankSubType, setBankSubType] = useState<(typeof BANK_SUB_TYPES)[number]>("Pesa");
+  const [bankOtherName, setBankOtherName] = useState("");
   const [accountDetails, setAccountDetails] = useState("");
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -182,19 +188,28 @@ function WalletPage() {
 
                 setSubmitting(true);
                 try {
+                  const bankLabel =
+                    bankSubType === "Other bank" ? bankOtherName.trim() || "Other bank" : bankSubType;
+                  const finalAccountDetails =
+                    accountType === "bank_transfer"
+                      ? `${bankLabel}: ${accountDetails.trim()}`
+                      : accountDetails.trim();
+
                   await apiRequest("/user/withdrawals", {
                     method: "POST",
                     token,
                     body: {
                       amount: Number(amount),
                       accountType,
-                      accountDetails: accountDetails.trim(),
+                      accountDetails: finalAccountDetails,
                       note: note.trim(),
                     },
                   });
                   toast.success("Withdrawal request submitted for admin review.");
                   setAmount("");
                   setAccountType("easypaisa");
+                  setBankSubType("Pesa");
+                  setBankOtherName("");
                   setAccountDetails("");
                   setNote("");
                   await loadData();
@@ -230,7 +245,9 @@ function WalletPage() {
                 <select
                   value={accountType}
                   onChange={(event) =>
-                    setAccountType(event.target.value as "easypaisa" | "jazzcash" | "bank_transfer")
+                    setAccountType(
+                      event.target.value as "easypaisa" | "jazzcash" | "bank_transfer" | "binance",
+                    )
                   }
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   required
@@ -238,8 +255,37 @@ function WalletPage() {
                   <option value="easypaisa">EasyPaisa</option>
                   <option value="jazzcash">JazzCash</option>
                   <option value="bank_transfer">Bank Transfer</option>
+                  <option value="binance">Binance</option>
                 </select>
               </div>
+
+              {accountType === "bank_transfer" ? (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Bank</label>
+                  <select
+                    value={bankSubType}
+                    onChange={(event) =>
+                      setBankSubType(event.target.value as (typeof BANK_SUB_TYPES)[number])
+                    }
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    required
+                  >
+                    {BANK_SUB_TYPES.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                  {bankSubType === "Other bank" ? (
+                    <Input
+                      value={bankOtherName}
+                      onChange={(event) => setBankOtherName(event.target.value)}
+                      placeholder="Enter bank name"
+                      required
+                    />
+                  ) : null}
+                </div>
+              ) : null}
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">
@@ -251,7 +297,9 @@ function WalletPage() {
                   placeholder={
                     accountType === "bank_transfer"
                       ? "Enter bank account number or IBAN"
-                      : "Enter mobile wallet number"
+                      : accountType === "binance"
+                        ? "Enter Binance ID / email"
+                        : "Enter mobile wallet number"
                   }
                   required
                 />
@@ -449,8 +497,8 @@ function formatTransactionType(type: WalletResponse["transactions"][number]["typ
       return "Winner reward";
     case "referral_commission":
       return "Referral commission";
-    case "points_reward":
-      return "Points reward";
+    case "rise_coins_reward":
+      return "Rise Coins reward";
     case "withdrawal":
       return "Withdrawal debit";
     default:
@@ -467,5 +515,6 @@ function formatWithdrawalAccountType(
 ) {
   if (type === "easypaisa") return "EasyPaisa";
   if (type === "jazzcash") return "JazzCash";
+  if (type === "binance") return "Binance";
   return "Bank Transfer";
 }

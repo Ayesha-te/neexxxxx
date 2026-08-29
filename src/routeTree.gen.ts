@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as CoursesRouteImport } from './routes/courses'
@@ -21,16 +20,13 @@ import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppRewardsRouteImport } from './routes/_app/rewards'
 import { Route as AppReferralsRouteImport } from './routes/_app/referrals'
 import { Route as AppPlansRouteImport } from './routes/_app/plans'
+import { Route as AppOwnersRouteImport } from './routes/_app/owners'
 import { Route as AppLuckyDrawRouteImport } from './routes/_app/lucky-draw'
 import { Route as AppJoinRouteImport } from './routes/_app/join'
 import { Route as AppEarningsRouteImport } from './routes/_app/earnings'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
+import { Route as AppCreateAccountRouteImport } from './routes/_app/create-account'
 
-const SignupRoute = SignupRouteImport.update({
-  id: '/signup',
-  path: '/signup',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -85,6 +81,11 @@ const AppPlansRoute = AppPlansRouteImport.update({
   path: '/plans',
   getParentRoute: () => AppRoute,
 } as any)
+const AppOwnersRoute = AppOwnersRouteImport.update({
+  id: '/owners',
+  path: '/owners',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppLuckyDrawRoute = AppLuckyDrawRouteImport.update({
   id: '/lucky-draw',
   path: '/lucky-draw',
@@ -105,17 +106,23 @@ const AppDashboardRoute = AppDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCreateAccountRoute = AppCreateAccountRouteImport.update({
+  id: '/create-account',
+  path: '/create-account',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/courses': typeof CoursesRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
-  '/signup': typeof SignupRoute
+  '/create-account': typeof AppCreateAccountRoute
   '/dashboard': typeof AppDashboardRoute
   '/earnings': typeof AppEarningsRoute
   '/join': typeof AppJoinRoute
   '/lucky-draw': typeof AppLuckyDrawRoute
+  '/owners': typeof AppOwnersRoute
   '/plans': typeof AppPlansRoute
   '/referrals': typeof AppReferralsRoute
   '/rewards': typeof AppRewardsRoute
@@ -128,11 +135,12 @@ export interface FileRoutesByTo {
   '/courses': typeof CoursesRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
-  '/signup': typeof SignupRoute
+  '/create-account': typeof AppCreateAccountRoute
   '/dashboard': typeof AppDashboardRoute
   '/earnings': typeof AppEarningsRoute
   '/join': typeof AppJoinRoute
   '/lucky-draw': typeof AppLuckyDrawRoute
+  '/owners': typeof AppOwnersRoute
   '/plans': typeof AppPlansRoute
   '/referrals': typeof AppReferralsRoute
   '/rewards': typeof AppRewardsRoute
@@ -147,11 +155,12 @@ export interface FileRoutesById {
   '/courses': typeof CoursesRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
-  '/signup': typeof SignupRoute
+  '/_app/create-account': typeof AppCreateAccountRoute
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/earnings': typeof AppEarningsRoute
   '/_app/join': typeof AppJoinRoute
   '/_app/lucky-draw': typeof AppLuckyDrawRoute
+  '/_app/owners': typeof AppOwnersRoute
   '/_app/plans': typeof AppPlansRoute
   '/_app/referrals': typeof AppReferralsRoute
   '/_app/rewards': typeof AppRewardsRoute
@@ -166,11 +175,12 @@ export interface FileRouteTypes {
     | '/courses'
     | '/forgot-password'
     | '/login'
-    | '/signup'
+    | '/create-account'
     | '/dashboard'
     | '/earnings'
     | '/join'
     | '/lucky-draw'
+    | '/owners'
     | '/plans'
     | '/referrals'
     | '/rewards'
@@ -183,11 +193,12 @@ export interface FileRouteTypes {
     | '/courses'
     | '/forgot-password'
     | '/login'
-    | '/signup'
+    | '/create-account'
     | '/dashboard'
     | '/earnings'
     | '/join'
     | '/lucky-draw'
+    | '/owners'
     | '/plans'
     | '/referrals'
     | '/rewards'
@@ -201,11 +212,12 @@ export interface FileRouteTypes {
     | '/courses'
     | '/forgot-password'
     | '/login'
-    | '/signup'
+    | '/_app/create-account'
     | '/_app/dashboard'
     | '/_app/earnings'
     | '/_app/join'
     | '/_app/lucky-draw'
+    | '/_app/owners'
     | '/_app/plans'
     | '/_app/referrals'
     | '/_app/rewards'
@@ -220,19 +232,11 @@ export interface RootRouteChildren {
   CoursesRoute: typeof CoursesRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
-  SignupRoute: typeof SignupRoute
   RReferralCodeRoute: typeof RReferralCodeRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/signup': {
-      id: '/signup'
-      path: '/signup'
-      fullPath: '/signup'
-      preLoaderRoute: typeof SignupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -310,6 +314,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPlansRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/owners': {
+      id: '/_app/owners'
+      path: '/owners'
+      fullPath: '/owners'
+      preLoaderRoute: typeof AppOwnersRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/lucky-draw': {
       id: '/_app/lucky-draw'
       path: '/lucky-draw'
@@ -338,14 +349,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/create-account': {
+      id: '/_app/create-account'
+      path: '/create-account'
+      fullPath: '/create-account'
+      preLoaderRoute: typeof AppCreateAccountRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
+  AppCreateAccountRoute: typeof AppCreateAccountRoute
   AppDashboardRoute: typeof AppDashboardRoute
   AppEarningsRoute: typeof AppEarningsRoute
   AppJoinRoute: typeof AppJoinRoute
   AppLuckyDrawRoute: typeof AppLuckyDrawRoute
+  AppOwnersRoute: typeof AppOwnersRoute
   AppPlansRoute: typeof AppPlansRoute
   AppReferralsRoute: typeof AppReferralsRoute
   AppRewardsRoute: typeof AppRewardsRoute
@@ -354,10 +374,12 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppCreateAccountRoute: AppCreateAccountRoute,
   AppDashboardRoute: AppDashboardRoute,
   AppEarningsRoute: AppEarningsRoute,
   AppJoinRoute: AppJoinRoute,
   AppLuckyDrawRoute: AppLuckyDrawRoute,
+  AppOwnersRoute: AppOwnersRoute,
   AppPlansRoute: AppPlansRoute,
   AppReferralsRoute: AppReferralsRoute,
   AppRewardsRoute: AppRewardsRoute,
@@ -373,7 +395,6 @@ const rootRouteChildren: RootRouteChildren = {
   CoursesRoute: CoursesRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
-  SignupRoute: SignupRoute,
   RReferralCodeRoute: RReferralCodeRoute,
 }
 export const routeTree = rootRouteImport

@@ -1,12 +1,17 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { MessageCircle } from "lucide-react";
 import { BrandLockup } from "@/components/BrandLockup";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { apiRequest, readSession, writeSession, type AppUser } from "@/lib/api";
 import { BRAND_NAME, pageTitle } from "@/lib/brand";
+
+type SiteInfoResponse = {
+  adminWhatsApp?: string;
+};
 
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: pageTitle("Login") }] }),
@@ -18,12 +23,17 @@ function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [siteInfo, setSiteInfo] = useState<SiteInfoResponse | null>(null);
 
   useEffect(() => {
     if (readSession()?.token) {
       void navigate({ to: "/dashboard" });
     }
   }, [navigate]);
+
+  useEffect(() => {
+    void apiRequest<SiteInfoResponse>("/public/site-info").then(setSiteInfo).catch(() => null);
+  }, []);
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 gradient-hero">
@@ -36,7 +46,7 @@ function LoginPage() {
             Welcome back to your <span className="text-gradient-gold">earning system</span>.
           </h2>
           <p className="text-muted-foreground">
-            Check your plans, points, rewards, withdrawals, and 3-step referral income in one
+            Check your plans, Rise Coins, rewards, withdrawals, and 3-step referral income in one
             place.
           </p>
         </div>
@@ -108,11 +118,17 @@ function LoginPage() {
             {submitting ? "Signing in..." : "Sign in"}
           </Button>
           <div className="text-center text-sm text-muted-foreground">
-            New here?{" "}
-            <Link to="/signup" className="text-gold hover:underline">
-              Create account
-            </Link>
+            New here? Ask an existing NexoRise member to create your account for you.
           </div>
+          <a
+            href={`https://wa.me/${(siteInfo?.adminWhatsApp ?? "923057410110").replace(/[^0-9]/g, "")}`}
+            target="_blank"
+            rel="noreferrer"
+            className="glass mx-auto flex w-fit items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground"
+          >
+            <MessageCircle className="size-3.5 text-gold" />
+            Need help? Chat with Admin on WhatsApp
+          </a>
         </form>
       </div>
     </div>

@@ -1,10 +1,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, BookOpen, Check, Phone, Mail, MapPin } from "lucide-react";
+import { ArrowLeft, BookOpen, Check, Phone, Mail, MapPin, GraduationCap, PartyPopper } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { BrandLockup } from "@/components/BrandLockup";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { apiRequest } from "@/lib/api";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { apiRequest, readSession } from "@/lib/api";
 import { courses, totalCourses } from "@/lib/courses";
 
 type SiteInfoResponse = {
@@ -18,8 +30,11 @@ type SiteInfoResponse = {
   };
 };
 
+const DEFAULT_WHATSAPP_CHANNEL_URL =
+  "https://whatsapp.com/channel/0029VbClmg56LwHqK2IXYy1Y?utm_source=chatgpt.com";
+
 export const Route = createFileRoute("/courses")({
-  head: () => ({ meta: [{ title: "All Courses - Nexo Women Empowerment" }] }),
+  head: () => ({ meta: [{ title: "All Courses - NexoRise" }] }),
   component: CoursesPage,
 });
 
@@ -39,7 +54,7 @@ function CoursesPage() {
             <ArrowLeft className="size-5 text-gold" />
             <BrandLockup titleClassName="text-lg font-bold" subtitleClassName="tracking-[0.22em]" />
           </Link>
-          <Link to="/signup">
+          <Link to="/login">
             <Button className="gradient-primary text-primary-foreground glow">Get Started</Button>
           </Link>
         </div>
@@ -74,6 +89,22 @@ function CoursesPage() {
           </CardContent>
         </Card>
 
+        {/* Beginner Level Training */}
+        <Card className="glass border-border/40 mb-10 border-gold/30 bg-gold/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <GraduationCap className="size-5 text-gold" /> Beginner Level Training
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-wrap items-center justify-between gap-4">
+            <p className="text-sm text-muted-foreground max-w-2xl">
+              New to NexoRise? Reserve your seat in our next Beginner Level Training session to learn
+              the basics of the platform, plans, and referral system before you get started.
+            </p>
+            <ConfirmSeatDialog />
+          </CardContent>
+        </Card>
+
         {/* Courses Grid */}
         <div className="grid gap-8">
           {Object.values(courses).map((category) => (
@@ -100,7 +131,7 @@ function CoursesPage() {
                           <h3 className="font-semibold text-foreground leading-tight">{course}</h3>
                         </div>
                       </div>
-                      <Link to="/signup" className="inline-block">
+                      <Link to="/login" className="inline-block">
                         <Button size="sm" variant="outline" className="h-8 text-xs">
                           Enroll Now
                         </Button>
@@ -136,7 +167,7 @@ function CoursesPage() {
               Join thousands of women empowering themselves through skill development and earning opportunities.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3">
-              <Link to="/signup">
+              <Link to="/login">
                 <Button size="lg" className="gradient-primary text-primary-foreground glow">
                   Enroll Now
                 </Button>
@@ -156,6 +187,170 @@ function CoursesPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+type ConfirmSeatResponse = {
+  message?: string;
+  confirmation?: string;
+  whatsappChannelUrl?: string;
+};
+
+function ConfirmSeatDialog() {
+  const [open, setOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState<ConfirmSeatResponse | null>(null);
+  const [form, setForm] = useState({ name: "", age: "", qualification: "" });
+  const [agreed, setAgreed] = useState(false);
+
+  const resetAndClose = () => {
+    setOpen(false);
+    setResult(null);
+    setForm({ name: "", age: "", qualification: "" });
+    setAgreed(false);
+  };
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(value) => {
+        if (!value) {
+          resetAndClose();
+        } else {
+          setOpen(true);
+        }
+      }}
+    >
+      <DialogTrigger asChild>
+        <Button className="gradient-gold text-gold-foreground shrink-0" onClick={() => setOpen(true)}>
+          Confirm Your Seat
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        {result ? (
+          <div className="space-y-4 text-center">
+            <div className="mx-auto grid size-14 place-items-center rounded-full bg-success/15 text-success">
+              <PartyPopper className="size-7" />
+            </div>
+            <DialogHeader>
+              <DialogTitle>Congratulations! Your seat has been reserved.</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground">
+              WhatsApp Channel ko follow karein aur active rahein, kyun ke tamam training sessions aur
+              updates isi channel par provide ki jayengi.
+            </p>
+            <a
+              href={result.whatsappChannelUrl ?? DEFAULT_WHATSAPP_CHANNEL_URL}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <Button className="gradient-primary text-primary-foreground glow w-full">
+                NexoRise WhatsApp Channel
+              </Button>
+            </a>
+            <Button variant="outline" className="w-full" onClick={resetAndClose}>
+              Close
+            </Button>
+          </div>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle>Confirm Your Seat</DialogTitle>
+              <DialogDescription>
+                Reserve your seat for the next Beginner Level Training session.
+              </DialogDescription>
+            </DialogHeader>
+            <form
+              className="space-y-4"
+              onSubmit={async (event) => {
+                event.preventDefault();
+                const session = readSession();
+                if (!session?.token) {
+                  toast.error("Please log in first to confirm your training seat.");
+                  return;
+                }
+                if (!agreed) {
+                  toast.error("Please agree to the training seat policy first.");
+                  return;
+                }
+
+                setSubmitting(true);
+                try {
+                  const response = await apiRequest<ConfirmSeatResponse>(
+                    "/user/training/confirm-seat",
+                    {
+                      method: "POST",
+                      token: session.token,
+                      body: {
+                        name: form.name.trim(),
+                        age: Number(form.age),
+                        qualification: form.qualification.trim(),
+                      },
+                    },
+                  );
+                  setResult(response);
+                } catch (error) {
+                  toast.error(
+                    error instanceof Error ? error.message : "Unable to confirm your seat.",
+                  );
+                } finally {
+                  setSubmitting(false);
+                }
+              }}
+            >
+              <div className="space-y-2">
+                <Label>Name</Label>
+                <Input
+                  required
+                  value={form.name}
+                  onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Age</Label>
+                <Input
+                  type="number"
+                  required
+                  min={1}
+                  value={form.age}
+                  onChange={(event) => setForm((current) => ({ ...current, age: event.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Qualification</Label>
+                <Input
+                  required
+                  value={form.qualification}
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, qualification: event.target.value }))
+                  }
+                />
+              </div>
+              <div className="rounded-xl border border-border/40 bg-background/35 p-3 text-xs text-muted-foreground">
+                Agar member ek dafa confirmed training seat skip karta hai ya given time par training
+                attend nahi karta, to usay next week's training session ke liye dobara seat confirm
+                karni hogi.
+              </div>
+              <label className="flex items-start gap-2 text-sm">
+                <Checkbox
+                  checked={agreed}
+                  onCheckedChange={(value) => setAgreed(value === true)}
+                  className="mt-0.5"
+                />
+                I Agree
+              </label>
+              <Button
+                type="submit"
+                disabled={submitting || !agreed}
+                className="gradient-primary text-primary-foreground w-full"
+              >
+                {submitting ? "Submitting..." : "Submit"}
+              </Button>
+            </form>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 

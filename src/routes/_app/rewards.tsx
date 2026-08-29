@@ -6,23 +6,24 @@ import { pageTitle } from "@/lib/brand";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { apiRequest, formatCurrency } from "@/lib/api";
+import { apiRequest } from "@/lib/api";
 import { useAppAuth } from "@/lib/auth";
+import { useCurrency } from "@/lib/currency";
 
 type RewardsResponse = {
-  totalPoints: number;
+  totalRiseCoins: number;
   totalClaimedRewardValue: number;
   milestones: Array<{
-    pointsRequired: number;
+    riseCoinsRequired: number;
     rewardAmount: number;
     title: string;
     claimed: boolean;
     claimable: boolean;
-    remainingPoints: number;
+    remainingRiseCoins: number;
   }>;
   claims: Array<{
     id: string;
-    pointsRequired: number;
+    riseCoinsRequired: number;
     rewardAmount: number;
     claimedAt: string;
   }>;
@@ -41,8 +42,9 @@ export const Route = createFileRoute("/_app/rewards")({
 
 function Rewards() {
   const { token } = useAppAuth();
+  const { format: formatCurrency } = useCurrency();
   const [data, setData] = useState<RewardsResponse | null>(null);
-  const [claimingPoints, setClaimingPoints] = useState<number | null>(null);
+  const [claimingRiseCoins, setClaimingRiseCoins] = useState<number | null>(null);
 
   const loadData = async () => {
     if (!token) {
@@ -65,15 +67,15 @@ function Rewards() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Points & Rewards</h1>
+        <h1 className="text-3xl font-bold">Rise Coins & Rewards</h1>
         <p className="text-muted-foreground">
-          Collect points from approved plans, unlock rank milestones, and claim PKR rewards into
+          Collect Rise Coins from approved plans, unlock rank milestones, and claim PKR rewards into
           your wallet.
         </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <SummaryCard icon={Target} label="Total points" value={String(data?.totalPoints ?? 0)} />
+        <SummaryCard icon={Target} label="Total Rise Coins" value={String(data?.totalRiseCoins ?? 0)} />
         <SummaryCard icon={Gift} label="Claimable now" value={String(claimableCount)} />
         <SummaryCard
           icon={Trophy}
@@ -89,18 +91,18 @@ function Rewards() {
         <CardContent className="space-y-3">
           {data?.milestones.map((milestone) => (
             <div
-              key={milestone.pointsRequired}
+              key={milestone.riseCoinsRequired}
               className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/40 bg-background/35 p-4"
             >
               <div>
                 <div className="font-semibold">{milestone.title}</div>
                 <div className="text-sm text-muted-foreground">
-                  {milestone.pointsRequired.toLocaleString()} points for{" "}
+                  {milestone.riseCoinsRequired.toLocaleString()} Rise Coins for{" "}
                   {formatCurrency(milestone.rewardAmount)}
                 </div>
                 {!milestone.claimed ? (
                   <div className="mt-2 text-xs text-muted-foreground">
-                    {milestone.remainingPoints.toLocaleString()} points remaining
+                    {milestone.remainingRiseCoins.toLocaleString()} Rise Coins remaining
                   </div>
                 ) : null}
               </div>
@@ -111,30 +113,30 @@ function Rewards() {
                   <Badge variant="outline">Unlocked</Badge>
                 ) : milestone.claimable ? (
                   <Button
-                    disabled={claimingPoints === milestone.pointsRequired}
+                    disabled={claimingRiseCoins === milestone.riseCoinsRequired}
                     className="gradient-primary text-primary-foreground"
                     onClick={async () => {
                       if (!token) {
                         return;
                       }
 
-                      setClaimingPoints(milestone.pointsRequired);
+                      setClaimingRiseCoins(milestone.riseCoinsRequired);
                       try {
                         await apiRequest("/user/rewards/claim", {
                           method: "POST",
                           token,
-                          body: { pointsRequired: milestone.pointsRequired },
+                          body: { riseCoinsRequired: milestone.riseCoinsRequired },
                         });
                         toast.success("Reward claimed successfully.");
                         await loadData();
                       } catch (error) {
                         toast.error(error instanceof Error ? error.message : "Unable to claim reward.");
                       } finally {
-                        setClaimingPoints(null);
+                        setClaimingRiseCoins(null);
                       }
                     }}
                   >
-                    {claimingPoints === milestone.pointsRequired ? "Claiming..." : "Claim reward"}
+                    {claimingRiseCoins === milestone.riseCoinsRequired ? "Claiming..." : "Claim reward"}
                   </Button>
                 ) : (
                   <Badge variant="outline">Locked</Badge>
@@ -159,7 +161,7 @@ function Rewards() {
                 >
                   <div>
                     <div className="font-semibold">
-                      {claim.pointsRequired.toLocaleString()} point milestone
+                      {claim.riseCoinsRequired.toLocaleString()} Rise Coin milestone
                     </div>
                     <div className="text-sm text-muted-foreground">
                       {new Date(claim.claimedAt).toLocaleString("en-PK", {

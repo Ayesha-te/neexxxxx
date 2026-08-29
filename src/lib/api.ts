@@ -112,12 +112,23 @@ export async function apiRequest<T>(
   return data;
 }
 
-export function formatCurrency(value: number) {
-  const currency = "PKR";
-  const locale = "en-PK";
-  const currencySymbol = currency === "PKR" ? "Rs" : currency;
-  
-  return `${currencySymbol} ${new Intl.NumberFormat(locale, {
+export type CurrencyCode = "PKR" | "USD";
+
+/**
+ * Formats a PKR amount for display. Pass `currency: "USD"` with the current
+ * `usdExchangeRate` (PKR per 1 USD, from `/api/public/site-info`) to convert
+ * and format as USD instead. See `src/lib/currency.tsx` for the shared
+ * `useCurrency()` hook that wires this up with a persisted toggle.
+ */
+export function formatCurrency(value: number, currency: CurrencyCode = "PKR", rate = 1) {
+  if (currency === "USD") {
+    const usdValue = rate > 0 ? value / rate : value;
+    return `$ ${new Intl.NumberFormat("en-US", {
+      maximumFractionDigits: 2,
+    }).format(usdValue)}`;
+  }
+
+  return `Rs ${new Intl.NumberFormat("en-PK", {
     maximumFractionDigits: 0,
   }).format(value)}`;
 }

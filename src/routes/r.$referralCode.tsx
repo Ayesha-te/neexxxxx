@@ -15,19 +15,22 @@ type ReferralPreviewResponse = {
     accountType: string;
   };
   settings: {
-    paymentDetails: {
-      accountName: string;
+    paymentMethods: Array<{
+      id: string;
+      type: "easypaisa" | "jazzcash" | "bank" | "binance";
+      label: string;
       accountNumber: string;
-      bankName: string;
-      instructions: string;
-    };
+      accountHolderName: string;
+      extraInstructions: string;
+      active: boolean;
+    }>;
     referralRules: {
       level1Percent: number;
       level2Percent: number;
       level3Percent: number;
     };
     rewardMilestones: Array<{
-      pointsRequired: number;
+      riseCoinsRequired: number;
       rewardAmount: number;
       title: string;
     }>;
@@ -44,7 +47,7 @@ type ReferralPreviewResponse = {
     id: string;
     name: string;
     price: number;
-    points: number;
+    riseCoins: number;
     benefits: string[];
     featured?: boolean;
   }>;
@@ -125,8 +128,8 @@ function ReferralPreviewPage() {
       <header className="border-b border-border/40 glass">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-12">
           <BrandLockup titleClassName="text-lg font-bold" subtitleClassName="tracking-[0.22em]" />
-          <Link to={`/signup?ref=${data.sponsor.referralCode}`}>
-            <Button className="gradient-primary text-primary-foreground">Join Now</Button>
+          <Link to="/login">
+            <Button className="gradient-primary text-primary-foreground">Member Login</Button>
           </Link>
         </div>
       </header>
@@ -143,15 +146,22 @@ function ReferralPreviewPage() {
                 You were invited by <span className="text-gradient">{data.sponsor.name}</span>
               </h1>
               <p className="max-w-2xl text-lg text-muted-foreground">
-                Join the NEXO Women Earning System to start with a fixed plan, build a 3-step team,
-                collect points, and unlock milestone rewards in your wallet.
+                NexoRise is invite-only: ask {data.sponsor.name} (or any existing member) to create
+                your account for you using this referral code — new accounts can no longer be
+                self-registered.
               </p>
-              <Link to={`/signup?ref=${data.sponsor.referralCode}`}>
-                <Button size="lg" className="gradient-gold text-gold-foreground">
-                  Continue with referral
-                  <ArrowRight className="size-4" />
-                </Button>
-              </Link>
+              <div className="inline-flex items-center gap-2 rounded-2xl border border-border/40 bg-background/40 px-4 py-3 text-sm">
+                Referral code:{" "}
+                <span className="font-semibold text-foreground">{data.sponsor.referralCode}</span>
+              </div>
+              <div>
+                <Link to="/login">
+                  <Button size="lg" className="gradient-gold text-gold-foreground">
+                    Already have an account? Log in
+                    <ArrowRight className="size-4" />
+                  </Button>
+                </Link>
+              </div>
             </div>
 
             <div className="rounded-3xl border border-border/40 bg-background/35 p-6">
@@ -200,7 +210,9 @@ function ReferralPreviewPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="text-3xl font-bold">{formatCurrency(plan.price)}</div>
-                <div className="text-sm font-semibold text-gold">{plan.points} points on approval</div>
+                <div className="text-sm font-semibold text-gold">
+                  {plan.riseCoins} Rise Coins on approval
+                </div>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   {plan.benefits.map((benefit) => (
                     <li key={benefit} className="flex items-start gap-2">
@@ -217,18 +229,18 @@ function ReferralPreviewPage() {
         <div className="grid gap-6 lg:grid-cols-[1.2fr,0.8fr]">
           <Card className="glass border-border/40">
             <CardHeader>
-              <CardTitle>Points & Rank Rewards</CardTitle>
+              <CardTitle>Rise Coins & Rank Rewards</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {data.settings.rewardMilestones.map((milestone) => (
                 <div
-                  key={milestone.pointsRequired}
+                  key={milestone.riseCoinsRequired}
                   className="flex items-center justify-between gap-3 rounded-2xl border border-border/40 bg-background/35 p-4"
                 >
                   <div>
                     <div className="font-semibold">{milestone.title}</div>
                     <div className="text-sm text-muted-foreground">
-                      {milestone.pointsRequired.toLocaleString()} points
+                      {milestone.riseCoinsRequired.toLocaleString()} Rise Coins
                     </div>
                   </div>
                   <div className="text-lg font-bold text-success">
@@ -266,13 +278,22 @@ function ReferralPreviewPage() {
 
             <Card className="glass border-border/40">
               <CardHeader>
-                <CardTitle>Manual Payment Details</CardTitle>
+                <CardTitle>Manual Payment Methods</CardTitle>
               </CardHeader>
               <CardContent className="grid gap-3">
-                <Info label="Account title" value={data.settings.paymentDetails.accountName} />
-                <Info label="Account number" value={data.settings.paymentDetails.accountNumber} />
-                <Info label="Bank name" value={data.settings.paymentDetails.bankName} />
-                <Info label="Instructions" value={data.settings.paymentDetails.instructions} />
+                {data.settings.paymentMethods.filter((method) => method.active).length ? (
+                  data.settings.paymentMethods
+                    .filter((method) => method.active)
+                    .map((method) => (
+                      <Info
+                        key={method.id}
+                        label={method.label}
+                        value={`${method.accountNumber} (${method.accountHolderName})`}
+                      />
+                    ))
+                ) : (
+                  <Info label="Payment methods" value="Not configured yet." />
+                )}
               </CardContent>
             </Card>
           </div>

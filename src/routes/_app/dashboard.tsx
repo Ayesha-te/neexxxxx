@@ -15,14 +15,65 @@ import { useEffect, useState } from "react";
 import { pageTitle } from "@/lib/brand";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { apiRequest, formatCurrency, type AppUser } from "@/lib/api";
+import { apiRequest, type AppUser } from "@/lib/api";
 import { useAppAuth } from "@/lib/auth";
+import { useCurrency } from "@/lib/currency";
+
+type ActivityFeedItem = {
+  id: string;
+  type: "signup" | "withdrawal";
+  name: string;
+  planAmount?: number;
+  method?: string;
+  amount?: number;
+  createdAt: string;
+};
+
+type ActivityFeedResponse = {
+  items: ActivityFeedItem[];
+};
+
+const WITHDRAWAL_METHOD_LABELS: Record<string, string> = {
+  easypaisa: "EasyPaisa",
+  jazzcash: "JazzCash",
+  bank_transfer: "Bank Transfer",
+  binance: "Binance",
+};
+
+function formatWithdrawalMethod(method?: string) {
+  if (!method) {
+    return "the platform";
+  }
+
+  return (
+    WITHDRAWAL_METHOD_LABELS[method] ??
+    method
+      .split("_")
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" ")
+  );
+}
+
+function formatActivityMessage(item: ActivityFeedItem) {
+  if (item.type === "signup") {
+    return `${item.name} ne Rs. ${(item.planAmount ?? 0).toLocaleString()} ke Plan se NexoRise par start kar liya.`;
+  }
+
+  return `${item.name} ne ${formatWithdrawalMethod(item.method)} ke through Rs. ${(item.amount ?? 0).toLocaleString()} withdrawal receive kiya.`;
+}
+
+function getTimeBasedGreeting() {
+  const hour = new Date().getHours();
+  const timeGreeting =
+    hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
+  return `Assalamualaikum, ${timeGreeting}!`;
+}
 
 type DashboardResponse = {
   user: AppUser;
   stats: {
     totalInvestment: number;
-    totalPoints: number;
+    totalRiseCoins: number;
     walletBalance: number;
     availableBalance: number;
     totalCommissionEarned: number;
@@ -35,10 +86,10 @@ type DashboardResponse = {
     plan: {
       name: string;
       price: number;
-      points: number;
+      riseCoins: number;
     };
     metrics: {
-      points: number;
+      riseCoins: number;
     };
   }>;
   referralSummary: {
@@ -52,17 +103,17 @@ type DashboardResponse = {
     level3Percent: number;
   };
   rewardProgress: {
-    totalPoints: number;
+    totalRiseCoins: number;
     totalClaimedRewardValue: number;
     nextMilestone: {
       title: string;
-      pointsRequired: number;
+      riseCoinsRequired: number;
       rewardAmount: number;
-      remainingPoints: number;
+      remainingRiseCoins: number;
     } | null;
     claimableMilestones: Array<{
       title: string;
-      pointsRequired: number;
+      riseCoinsRequired: number;
       rewardAmount: number;
     }>;
   };
@@ -88,17 +139,17 @@ type DashboardResponse = {
 };
 
 type ReferralRankResponse = {
-  totalPoints: number;
-  personalPoints: number;
-  referralPoints: number;
+  totalRiseCoins: number;
+  personalRiseCoins: number;
+  referralRiseCoins: number;
   referralBreakdown: {
-    level1Points: number;
-    level2Points: number;
-    level3Points: number;
+    level1RiseCoins: number;
+    level2RiseCoins: number;
+    level3RiseCoins: number;
   };
   tier: {
     title: string;
-    pointsRequired: number;
+    riseCoinsRequired: number;
     directPercent: number | null;
     indirectPercent: number | null;
     teamPercent: number | null;
@@ -117,8 +168,10 @@ export const Route = createFileRoute("/_app/dashboard")({
 
 function Dashboard() {
   const { token, user } = useAppAuth();
+  const { format: formatCurrency } = useCurrency();
   const [data, setData] = useState<DashboardResponse | null>(null);
   const [rank, setRank] = useState<ReferralRankResponse | null>(null);
+  const [activityFeed, setActivityFeed] = useState<ActivityFeedItem[]>([]);
 
   useEffect(() => {
     if (!token) {
@@ -150,6 +203,26 @@ function Dashboard() {
     };
   }, [token]);
 
+  useEffect(() => {
+    const loadActivityFeed = () => {
+      void apiRequest<ActivityFeedResponse>("/public/activity-feed")
+        .then((response) => setActivityFeed(response.items ?? []))
+        .catch(() => null);
+    };
+
+    loadActivityFeed();
+    const refreshTimer = window.setInterval(loadActivityFeed, 60_000);
+
+    return () => {
+      window.clearInterval(refreshTimer);
+    };
+  }, []);
+
+  const marqueeMessages = [
+    getTimeBasedGreeting(),
+    ...activityFeed.map(formatActivityMessage),
+  ];
+
   const percentOrFallback = (value: number | null | undefined, fallback: number) =>
     Number.isFinite(value) ? Number(value) : fallback;
 
@@ -168,8 +241,8 @@ function Dashboard() {
       cardClass: "bg-[linear-gradient(135deg,oklch(0.97_0.035_338),oklch(0.93_0.05_325))]",
     },
     {
-      label: "Total Points",
-      value: (data?.stats.totalPoints ?? 0).toLocaleString(),
+      label: "Total Rise Coins",
+      value: (data?.stats.totalRiseCoins ?? 0).toLocaleString(),
       icon: TrendingUp,
       iconTint: "text-success",
       cardClass: "bg-[linear-gradient(135deg,oklch(0.96_0.04_150),oklch(0.91_0.06_155))]",
@@ -200,8 +273,8 @@ function Dashboard() {
         0,
         Math.min(
           100,
-          ((nextMilestone.pointsRequired - nextMilestone.remainingPoints) /
-            nextMilestone.pointsRequired) *
+          ((nextMilestone.riseCoinsRequired - nextMilestone.remainingRiseCoins) /
+            nextMilestone.riseCoinsRequired) *
             100,
         ),
       )
@@ -222,7 +295,7 @@ function Dashboard() {
                 Welcome back, {user?.name ?? "Nexo member"}
               </h1>
               <p className="mt-2 text-primary-foreground/85 sm:text-base">
-                Track your growth journey with live points, balance movement, milestones, and
+                Track your growth journey with live Rise Coins, balance movement, milestones, and
                 referrals all in one view.
               </p>
             </div>
@@ -294,7 +367,7 @@ function Dashboard() {
                     <div>
                       <div className="font-semibold">{investment.plan.name}</div>
                       <div className="text-sm text-muted-foreground">
-                        {formatCurrency(investment.plan.price)} • {investment.plan.points} points
+                        {formatCurrency(investment.plan.price)} • {investment.plan.riseCoins} Rise Coins
                       </div>
                     </div>
                     <Badge variant="outline" className="capitalize">
@@ -305,7 +378,7 @@ function Dashboard() {
               ))
             ) : (
               <div className="rounded-2xl border border-dashed border-border/40 p-6 text-sm text-muted-foreground">
-                No approved plan yet. Submit your first investment to start collecting points.
+                No approved plan yet. Submit your first investment to start collecting Rise Coins.
               </div>
             )}
           </CardContent>
@@ -320,9 +393,9 @@ function Dashboard() {
           <CardContent className="space-y-4">
             <div className="rounded-2xl border border-border/40 bg-background/35 p-4">
               <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                Current points
+                Current Rise Coins
               </div>
-              <div className="mt-2 text-4xl font-bold">{data?.rewardProgress.totalPoints ?? 0}</div>
+              <div className="mt-2 text-4xl font-bold">{data?.rewardProgress.totalRiseCoins ?? 0}</div>
               <div className="mt-2 text-sm text-muted-foreground">
                 Claimed reward value:{" "}
                 {formatCurrency(data?.rewardProgress.totalClaimedRewardValue ?? 0)}
@@ -337,7 +410,7 @@ function Dashboard() {
                   </div>
                 </div>
                 <div className="mt-1 text-sm text-muted-foreground">
-                  {data.rewardProgress.nextMilestone.pointsRequired.toLocaleString()} points for{" "}
+                  {data.rewardProgress.nextMilestone.riseCoinsRequired.toLocaleString()} Rise Coins for{" "}
                   {formatCurrency(data.rewardProgress.nextMilestone.rewardAmount)}
                 </div>
                 <div className="mt-3 h-2 overflow-hidden rounded-full bg-accent/80">
@@ -348,7 +421,7 @@ function Dashboard() {
                   />
                 </div>
                 <div className="mt-3 text-sm font-medium text-gold">
-                  {data.rewardProgress.nextMilestone.remainingPoints.toLocaleString()} points to go
+                  {data.rewardProgress.nextMilestone.remainingRiseCoins.toLocaleString()} Rise Coins to go
                 </div>
               </div>
             ) : (
@@ -462,11 +535,21 @@ function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="glass border-border/40">
+        <Card className="glass border-border/40 overflow-hidden">
           <CardHeader>
             <CardTitle>Announcements</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
+            <div className="relative overflow-hidden rounded-2xl border border-gold/30 bg-gold/5 py-2.5">
+              <div className="animate-marquee flex w-max gap-10 whitespace-nowrap px-4 text-sm font-medium text-foreground">
+                {[...marqueeMessages, ...marqueeMessages].map((message, index) => (
+                  <span key={index} className="inline-flex items-center gap-2">
+                    <span className="size-1.5 rounded-full bg-gold" />
+                    {message}
+                  </span>
+                ))}
+              </div>
+            </div>
             {data?.announcements.length ? (
               data.announcements.map((announcement) => (
                 <div
