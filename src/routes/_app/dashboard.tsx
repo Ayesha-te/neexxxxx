@@ -15,6 +15,18 @@ import {
   Wallet,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import {
+  Bar,
+  BarChart,
+  Cell,
+  Pie,
+  PieChart,
+  RadialBar,
+  RadialBarChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+} from "recharts";
 import { toast } from "sonner";
 import { pageTitle } from "@/lib/brand";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -316,6 +328,28 @@ function Dashboard() {
     ? Math.max(0, Math.min(100, (currentRiseCoins / nextRankTier.riseCoinsRequired) * 100))
     : 100;
 
+  const personalRiseCoins = rank?.personalRiseCoins ?? 0;
+  const referralRiseCoins = rank?.referralRiseCoins ?? 0;
+  const hasRiseCoinsBreakdown = rank !== null && (personalRiseCoins > 0 || referralRiseCoins > 0);
+  const riseCoinsBreakdownData = [
+    { name: "Personal", value: personalRiseCoins, fill: "var(--primary)" },
+    { name: "Referral", value: referralRiseCoins, fill: "var(--secondary)" },
+  ];
+
+  const nextRankGaugeData = [{ name: "Progress", value: nextRankProgress, fill: "var(--primary)" }];
+
+  const walletActivityData = (data?.recentTransactions ?? [])
+    .slice()
+    .reverse()
+    .map((transaction) => ({
+      label: new Date(transaction.createdAt).toLocaleDateString("en-PK", {
+        day: "2-digit",
+        month: "short",
+      }),
+      amount: transaction.direction === "debit" ? -transaction.amount : transaction.amount,
+    }));
+  const hasWalletActivityChart = walletActivityData.length >= 3;
+
   const pendingDeposit = data?.investments.find((investment) => investment.status === "pending") ?? null;
 
   const nextMilestone = data?.rewardProgress.nextMilestone;
@@ -350,7 +384,7 @@ function Dashboard() {
   return (
     <div className="space-y-6 pb-2">
       {/* Welcome header */}
-      <Card className="relative overflow-hidden border-0 bg-[linear-gradient(135deg,oklch(0.53_0.2_333),oklch(0.41_0.17_308))] text-primary-foreground shadow-[0_28px_60px_-32px_oklch(0.33_0.14_320/0.8)]">
+      <Card className="relative isolate transform-gpu overflow-hidden border-0 bg-[linear-gradient(135deg,oklch(0.53_0.2_333),oklch(0.41_0.17_308))] text-primary-foreground shadow-[0_28px_60px_-32px_oklch(0.33_0.14_320/0.8)] will-change-transform">
         <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-white/15 blur-2xl" />
         <div className="pointer-events-none absolute -bottom-24 -left-12 h-56 w-56 rounded-full bg-gold/25 blur-3xl" />
         <CardContent className="relative space-y-4 p-5 sm:p-7">
@@ -382,7 +416,7 @@ function Dashboard() {
           </div>
 
           {/* Marquee / live activity ticker */}
-          <div className="relative overflow-hidden rounded-2xl border border-white/20 bg-white/10 py-2.5">
+          <div className="relative isolate flex h-9 transform-gpu items-center overflow-hidden rounded-2xl border border-white/20 bg-white/10 will-change-transform">
             <div className="animate-marquee flex w-max gap-10 whitespace-nowrap px-4 text-sm font-medium">
               {[...marqueeMessages, ...marqueeMessages].map((message, index) => (
                 <span key={index} className="inline-flex items-center gap-2">
@@ -468,19 +502,36 @@ function Dashboard() {
               <Trophy className="size-4 text-gold" /> Next Rank
             </div>
             {nextRankTier ? (
-              <>
-                <div className="text-lg font-semibold">{nextRankTier.name}</div>
-                <div className="text-sm text-muted-foreground">
-                  {riseCoinsToNextRank.toLocaleString()} Rise Coins to go
+              <div className="flex items-center gap-3">
+                <div className="h-[72px] w-[72px] shrink-0">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadialBarChart
+                      innerRadius="70%"
+                      outerRadius="100%"
+                      barSize={7}
+                      data={nextRankGaugeData}
+                      startAngle={90}
+                      endAngle={-270}
+                    >
+                      <RadialBar
+                        dataKey="value"
+                        cornerRadius={4}
+                        background={{ fill: "var(--accent)" }}
+                        fill="var(--primary)"
+                      />
+                    </RadialBarChart>
+                  </ResponsiveContainer>
                 </div>
-                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-accent/80">
-                  <div
-                    className="h-full gradient-primary"
-                    style={{ width: `${nextRankProgress}%` }}
-                    aria-label="Next rank progress"
-                  />
+                <div className="min-w-0">
+                  <div className="text-lg font-semibold">{nextRankTier.name}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {riseCoinsToNextRank.toLocaleString()} Rise Coins to go
+                  </div>
+                  <div className="mt-1 text-xs font-medium text-gold">
+                    {nextRankProgress.toFixed(0)}% complete
+                  </div>
                 </div>
-              </>
+              </div>
             ) : (
               <div className="text-lg font-semibold">Highest Rank Achieved</div>
             )}
@@ -689,6 +740,57 @@ function Dashboard() {
         </CardContent>
       </Card>
 
+      {hasRiseCoinsBreakdown ? (
+        <Card className="glass border-border/40">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Coins className="size-5 text-gold" /> Rise Coins Breakdown
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+            <div className="h-[140px] w-[140px] shrink-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={riseCoinsBreakdownData}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius="65%"
+                    outerRadius="100%"
+                    paddingAngle={2}
+                    stroke="none"
+                  >
+                    {riseCoinsBreakdownData.map((entry) => (
+                      <Cell key={entry.name} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value: number, name: string) => [value.toLocaleString(), name]}
+                    contentStyle={{ borderRadius: 12, fontSize: 12 }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex gap-6 sm:flex-col sm:gap-3">
+              <div className="flex items-center gap-2">
+                <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: "var(--primary)" }} />
+                <div>
+                  <div className="text-xs text-muted-foreground">Personal</div>
+                  <div className="text-sm font-semibold">{personalRiseCoins.toLocaleString()}</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: "var(--secondary)" }} />
+                <div>
+                  <div className="text-xs text-muted-foreground">Referral</div>
+                  <div className="text-sm font-semibold">{referralRiseCoins.toLocaleString()}</div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
+
       <Card className="glass border-border/40">
         <CardContent className="grid gap-4 p-4 sm:grid-cols-3 sm:p-5">
           <div className="rounded-2xl border border-border/40 bg-background/40 p-4">
@@ -723,6 +825,26 @@ function Dashboard() {
             <CardTitle>Recent Wallet Activity</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
+            {hasWalletActivityChart ? (
+              <div className="h-[140px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={walletActivityData} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
+                    <XAxis
+                      dataKey="label"
+                      tickLine={false}
+                      axisLine={false}
+                      fontSize={11}
+                      stroke="var(--muted-foreground)"
+                    />
+                    <Tooltip
+                      formatter={(value: number) => formatCurrency(value)}
+                      contentStyle={{ borderRadius: 12, fontSize: 12 }}
+                    />
+                    <Bar dataKey="amount" radius={[4, 4, 4, 4]} fill="var(--primary)" maxBarSize={28} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            ) : null}
             {data?.recentTransactions.length ? (
               data.recentTransactions.map((transaction) => (
                 <div

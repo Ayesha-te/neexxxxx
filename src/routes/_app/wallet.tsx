@@ -112,6 +112,20 @@ function WalletPage() {
     ? Math.max(data.rules.dailyLimitMax - todayRequested, 0)
     : 0;
 
+  const belowMinimumBalance = data
+    ? data.availableBalance < data.rules.minimumAmount
+    : false;
+  const maxRequestable = data ? Math.min(data.availableBalance, dailyRemaining) : 0;
+  const amountError = data
+    ? requestedAmount > 0 && requestedAmount > maxRequestable
+      ? requestedAmount > data.availableBalance
+        ? `You only have ${formatCurrency(data.availableBalance)} available to withdraw right now.`
+        : `You can request at most ${formatCurrency(dailyRemaining)} more today (daily limit reached).`
+      : requestedAmount > 0 && requestedAmount < data.rules.minimumAmount
+        ? `Minimum withdrawal is ${formatCurrency(data.rules.minimumAmount)}.`
+        : null
+    : null;
+
   return (
     <div className="space-y-6">
       <div>
@@ -175,6 +189,14 @@ function WalletPage() {
                 You already have a pending withdrawal of {formatCurrency(pendingWithdrawal.amount)}.
                 New requests will unlock after admin reviews it.
               </div>
+            ) : belowMinimumBalance ? (
+              <div className="rounded-2xl border border-warning/30 bg-warning/10 p-4 text-sm text-warning">
+                You need at least {formatCurrency(data?.rules.minimumAmount ?? 0)} in available
+                balance to request a withdrawal. Your available balance right now is{" "}
+                {formatCurrency(data?.availableBalance ?? 0)}. Available balance comes from
+                approved commissions and rewards, not from your plan deposit itself — keep building
+                your team or wait for approvals to unlock withdrawals.
+              </div>
             ) : null}
 
             <form
@@ -225,13 +247,15 @@ function WalletPage() {
                 <label className="text-sm font-medium">Withdrawal amount</label>
                 <Input
                   type="number"
-                  min={data?.rules.minimumAmount ?? 0}
-                  max={Math.min(data?.availableBalance ?? 0, dailyRemaining)}
                   value={amount}
                   onChange={(event) => setAmount(event.target.value)}
                   placeholder="1000"
+                  disabled={belowMinimumBalance || !!pendingWithdrawal}
                   required
                 />
+                {amountError ? (
+                  <p className="text-sm font-medium text-destructive">{amountError}</p>
+                ) : null}
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
@@ -329,7 +353,15 @@ function WalletPage() {
 
               <Button
                 type="submit"
-                disabled={submitting || !data || !!pendingWithdrawal || !accountDetails.trim()}
+                disabled={
+                  submitting ||
+                  !data ||
+                  !!pendingWithdrawal ||
+                  belowMinimumBalance ||
+                  !accountDetails.trim() ||
+                  requestedAmount <= 0 ||
+                  !!amountError
+                }
                 className="gradient-primary text-primary-foreground"
               >
                 {submitting ? "Submitting..." : "Request Withdrawal"}
