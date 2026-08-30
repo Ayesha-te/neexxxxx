@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { apiRequest, readSession, writeSession, type AppUser } from "@/lib/api";
 import { BRAND_NAME, pageTitle } from "@/lib/brand";
+import { getAdminWhatsAppLink } from "@/lib/whatsapp";
 
 type SiteInfoResponse = {
   adminWhatsApp?: string;
@@ -121,7 +122,10 @@ function LoginPage() {
             New here? Ask an existing NexoRise member to create your account for you.
           </div>
           <a
-            href={`https://wa.me/${(siteInfo?.adminWhatsApp ?? "923057410110").replace(/[^0-9]/g, "")}`}
+            href={getAdminWhatsAppLink(
+              siteInfo?.adminWhatsApp,
+              "Hi, I'm contacting NexoRise Admin from the login page. I need help with: ",
+            )}
             target="_blank"
             rel="noreferrer"
             className="glass mx-auto flex w-fit items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground"

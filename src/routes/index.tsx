@@ -32,6 +32,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { BRAND_DESCRIPTION, BRAND_NAME } from "@/lib/brand";
 import { courses, totalCourses } from "@/lib/courses";
 import { apiRequest } from "@/lib/api";
+import { getAdminWhatsAppLink } from "@/lib/whatsapp";
 
 type SiteInfoResponse = {
   platformName: string;
@@ -86,8 +87,7 @@ const departments = [
 ];
 
 function whatsappHref(number: string) {
-  const digits = number.replace(/[^0-9]/g, "");
-  return `https://wa.me/${digits}`;
+  return getAdminWhatsAppLink(number);
 }
 
 export const Route = createFileRoute("/")({

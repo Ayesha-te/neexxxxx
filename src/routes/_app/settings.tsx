@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { apiRequest, changePassword, type AppUser } from "@/lib/api";
 import { useAppAuth } from "@/lib/auth";
+import { getAdminWhatsAppLink } from "@/lib/whatsapp";
 
 type SiteInfoResponse = {
   platformName: string;
@@ -265,7 +266,12 @@ function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <a
-              href={`https://wa.me/${(siteInfo?.adminWhatsApp ?? "923057410110").replace(/[^0-9]/g, "")}`}
+              href={getAdminWhatsAppLink(
+                siteInfo?.adminWhatsApp,
+                user?.name
+                  ? `Hi, I'm ${user.name}, contacting NexoRise Admin from my account settings page. I need help with: `
+                  : undefined,
+              )}
               target="_blank"
               rel="noreferrer"
               className="block"
