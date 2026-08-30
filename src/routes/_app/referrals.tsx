@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ChevronDown, Copy, KeyRound, Share2, Users } from "lucide-react";
+import { ChevronDown, Copy, KeyRound, Users } from "lucide-react";
 import { toast } from "sonner";
 import { pageTitle } from "@/lib/brand";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -83,16 +83,6 @@ function Referrals() {
     void apiRequest<ReferralsResponse>("/user/referrals", { token }).then(setData);
   }, [token]);
 
-  const copy = async () => {
-    if (!data?.user.referralLinkEnabled || !data?.user.referralLink) {
-      toast.error("Referral link is not available yet.");
-      return;
-    }
-
-    await navigator.clipboard.writeText(data.user.referralLink);
-    toast.success("Referral link copied!");
-  };
-
   const copyCode = async () => {
     if (!data?.user.referralCode) {
       toast.error("Referral code is not available yet.");
@@ -169,41 +159,6 @@ function Referrals() {
           </CardContent>
         </Card>
       </div>
-
-      <Card className="glass border-border/40">
-        <CardHeader>
-          <CardTitle>Your referral link</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3 sm:flex-row">
-          <Input
-            readOnly
-            value={
-              data?.user.referralLinkEnabled
-                ? (data?.user.referralLink ?? "Referral link unavailable")
-                : "Referral unlocks after your first approved investment."
-            }
-            className="flex-1 bg-input/50"
-          />
-          <Button
-            onClick={copy}
-            disabled={!data?.user.referralLinkEnabled}
-            className="gradient-primary text-primary-foreground disabled:opacity-60"
-          >
-            <Copy className="mr-2 size-4" /> Copy
-          </Button>
-          <Button
-            variant="outline"
-            disabled={!data?.user.referralLinkEnabled}
-            onClick={() =>
-              data?.user.referralLinkEnabled
-                ? toast.success("Your referral link is ready to share.")
-                : toast.error("Referral link unlocks after approved investment.")
-            }
-          >
-            <Share2 className="mr-2 size-4" /> Share
-          </Button>
-        </CardContent>
-      </Card>
 
       <div className="grid gap-4 sm:grid-cols-3">
         {[

@@ -29,6 +29,7 @@ type PaymentMethod = {
   label: string;
   accountNumber: string;
   accountHolderName: string;
+  bankName?: string;
   extraInstructions: string;
   active: boolean;
 };
@@ -295,6 +296,11 @@ function CreateAccountPage() {
                     })()}
                     {selectedMethod.label}
                   </div>
+                  {selectedMethod.type === "bank" && selectedMethod.bankName ? (
+                    <div className="mt-1 text-muted-foreground">
+                      Bank: {selectedMethod.bankName}
+                    </div>
+                  ) : null}
                   <div className="mt-1 text-muted-foreground">
                     Account: {selectedMethod.accountNumber} ({selectedMethod.accountHolderName})
                   </div>

@@ -19,6 +19,7 @@ type PaymentMethod = {
   label: string;
   accountNumber: string;
   accountHolderName: string;
+  bankName?: string;
   extraInstructions: string;
   active: boolean;
 };
@@ -215,15 +216,6 @@ function Plans() {
                 {selectedPlan ? formatCurrency(selectedPlan.price) : "-"}
               </div>
             </div>
-            <div className="mt-4 text-xs text-muted-foreground">
-              Referral structure:{" "}
-              {selectedPlan
-                ? `${selectedPlan.level1Percent}% / ${selectedPlan.level2Percent}% / ${selectedPlan.level3Percent}%`
-                : joinData
-                  ? `${joinData.settings.referralRules.level1Percent}% / ${joinData.settings.referralRules.level2Percent}% / ${joinData.settings.referralRules.level3Percent}%`
-                : "48% / 18% / 10%"}
-            </div>
-
             <div className="mt-6 space-y-2">
               <label className="text-sm font-medium">Pay to which account?</label>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -256,6 +248,11 @@ function Plans() {
                     })()}
                     {selectedMethod.label}
                   </div>
+                  {selectedMethod.type === "bank" && selectedMethod.bankName ? (
+                    <div className="mt-1 text-muted-foreground">
+                      Bank: {selectedMethod.bankName}
+                    </div>
+                  ) : null}
                   <div className="mt-1 text-muted-foreground">
                     Account: {selectedMethod.accountNumber} ({selectedMethod.accountHolderName})
                   </div>
@@ -323,6 +320,18 @@ function Plans() {
               }
             }}
           >
+            {selectedMethod ? (
+              <div className="flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/5 px-3 py-2 text-sm font-medium text-foreground">
+                {(() => {
+                  const Icon = getPaymentMethodIcon(selectedMethod.type);
+                  return <Icon className="size-4 text-primary" />;
+                })()}
+                Paying via {selectedMethod.label}
+                {selectedMethod.type === "bank" && selectedMethod.bankName
+                  ? ` (${selectedMethod.bankName})`
+                  : ""}
+              </div>
+            ) : null}
             <div className="space-y-2">
               <label className="text-sm font-medium">Amount</label>
               <Input readOnly value={selectedPlan ? formatCurrency(selectedPlan.price) : ""} />

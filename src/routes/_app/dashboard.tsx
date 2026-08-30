@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  ArrowUpRight,
   Bell,
   Coins,
+  Copy,
   Gift,
   GraduationCap,
+  KeyRound,
   ShieldCheck,
   Sparkles,
   Target,
@@ -14,8 +15,11 @@ import {
   Wallet,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { pageTitle } from "@/lib/brand";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiRequest, type AppUser } from "@/lib/api";
 import { useAppAuth } from "@/lib/auth";
@@ -70,6 +74,15 @@ function getTimeBasedGreeting() {
   const timeGreeting =
     hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
   return `Assalamualaikum, ${timeGreeting}!`;
+}
+
+function getInitials(name?: string | null) {
+  return (name ?? "NX")
+    .split(" ")
+    .map((part) => part[0] ?? "")
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 }
 
 type DashboardResponse = {
@@ -236,7 +249,7 @@ function Dashboard() {
     level3: percentOrFallback(rank?.percents?.team, data?.referralRules.level3Percent ?? 0),
   };
 
-  const cards = [
+  const statTiles = [
     {
       label: "Total Investment",
       value: formatCurrency(data?.stats.totalInvestment ?? 0),
@@ -259,23 +272,49 @@ function Dashboard() {
       cardClass: "bg-[linear-gradient(135deg,oklch(0.98_0.035_85),oklch(0.93_0.055_74))]",
     },
     {
-      label: "Referral Income",
-      value: formatCurrency(data?.stats.totalCommissionEarned ?? 0),
+      label: "Wallet Balance",
+      value: formatCurrency(data?.stats.walletBalance ?? 0),
       icon: Coins,
       iconTint: "text-secondary",
       cardClass: "bg-[linear-gradient(135deg,oklch(0.97_0.03_320),oklch(0.92_0.045_300))]",
     },
   ];
 
-  const referralTotal =
-    (data?.referralSummary.level1 ?? 0) +
-    (data?.referralSummary.level2 ?? 0) +
-    (data?.referralSummary.level3 ?? 0);
+  const directCount = data?.referralSummary.level1 ?? 0;
+  const indirectCount = (data?.referralSummary.level2 ?? 0) + (data?.referralSummary.level3 ?? 0);
+  const referralTotal = directCount + indirectCount;
+
+  const teamTiles = [
+    {
+      label: "Total Team Members",
+      value: referralTotal.toLocaleString(),
+      icon: Users,
+    },
+    {
+      label: "Direct Team (Step 1)",
+      value: directCount.toLocaleString(),
+      icon: Users,
+    },
+    {
+      label: "Indirect Team (Step 2 & 3)",
+      value: indirectCount.toLocaleString(),
+      icon: Users,
+    },
+    {
+      label: "Total Referral Income",
+      value: formatCurrency(data?.stats.totalCommissionEarned ?? 0),
+      icon: Coins,
+    },
+  ];
+
   const currentRiseCoins = data?.stats.totalRiseCoins ?? rank?.totalRiseCoins ?? 0;
   const nextRankTier = levelBenefits.find((tier) => tier.riseCoinsRequired > currentRiseCoins) ?? null;
   const riseCoinsToNextRank = nextRankTier
     ? Math.max(0, nextRankTier.riseCoinsRequired - currentRiseCoins)
     : 0;
+  const nextRankProgress = nextRankTier
+    ? Math.max(0, Math.min(100, (currentRiseCoins / nextRankTier.riseCoinsRequired) * 100))
+    : 100;
 
   const pendingDeposit = data?.investments.find((investment) => investment.status === "pending") ?? null;
 
@@ -292,28 +331,39 @@ function Dashboard() {
       )
     : 100;
 
+  const referralCode = data?.user.referralCode ?? user?.referralCode ?? null;
+  const referredBy = data?.user.sponsorName ?? user?.sponsorName ?? "Direct — no sponsor";
+  const joinDate = data?.user.createdAt ?? user?.createdAt;
+  const memberName = data?.user.name ?? user?.name ?? "Nexo member";
+  const rankTitle = rank?.tier?.title;
+
+  const copyReferralCode = async () => {
+    if (!referralCode) {
+      toast.error("Referral code is not available yet.");
+      return;
+    }
+
+    await navigator.clipboard.writeText(referralCode);
+    toast.success("Referral code copied!");
+  };
+
   return (
     <div className="space-y-6 pb-2">
+      {/* Welcome header */}
       <Card className="relative overflow-hidden border-0 bg-[linear-gradient(135deg,oklch(0.53_0.2_333),oklch(0.41_0.17_308))] text-primary-foreground shadow-[0_28px_60px_-32px_oklch(0.33_0.14_320/0.8)]">
         <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-white/15 blur-2xl" />
         <div className="pointer-events-none absolute -bottom-24 -left-12 h-56 w-56 rounded-full bg-gold/25 blur-3xl" />
-        <CardContent className="relative p-5 sm:p-7">
+        <CardContent className="relative space-y-4 p-5 sm:p-7">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="max-w-2xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-medium">
                 <Sparkles className="size-3.5" /> Live dashboard
               </div>
               <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">
-                Welcome back, {user?.name ?? "Nexo member"}
-                {rank?.tier?.title ? (
-                  <span className="ml-2 align-middle text-lg font-bold text-gold sm:text-xl">
-                    — {rank.tier.title}
-                  </span>
-                ) : null}
+                {getTimeBasedGreeting()}
               </h1>
               <p className="mt-2 text-primary-foreground/85 sm:text-base">
-                Track your growth journey with live Rise Coins, balance movement, milestones, and
-                referrals all in one view.
+                Track your Rise Coins, balance, referral team, and milestones all in one view.
               </p>
             </div>
             <div className="flex flex-col items-end gap-2">
@@ -330,54 +380,199 @@ function Dashboard() {
               </Badge>
             </div>
           </div>
-          <div className="mt-5 grid grid-cols-3 gap-2 sm:gap-3">
-            <div className="rounded-xl border border-white/20 bg-white/10 p-3">
-              <div className="text-[11px] uppercase tracking-[0.18em] text-primary-foreground/70">
-                Approved plans
-              </div>
-              <div className="mt-1 text-xl font-bold">{data?.investments.length ?? 0}</div>
-            </div>
-            <div className="rounded-xl border border-white/20 bg-white/10 p-3">
-              <div className="text-[11px] uppercase tracking-[0.18em] text-primary-foreground/70">
-                Team size
-              </div>
-              <div className="mt-1 text-xl font-bold">{referralTotal}</div>
-            </div>
-            <div className="rounded-xl border border-white/20 bg-white/10 p-3">
-              <div className="text-[11px] uppercase tracking-[0.18em] text-primary-foreground/70">
-                Claimable rewards
-              </div>
-              <div className="mt-1 text-xl font-bold">
-                {data?.rewardProgress.claimableMilestones.length ?? 0}
-              </div>
+
+          {/* Marquee / live activity ticker */}
+          <div className="relative overflow-hidden rounded-2xl border border-white/20 bg-white/10 py-2.5">
+            <div className="animate-marquee flex w-max gap-10 whitespace-nowrap px-4 text-sm font-medium">
+              {[...marqueeMessages, ...marqueeMessages].map((message, index) => (
+                <span key={index} className="inline-flex items-center gap-2">
+                  <span className="size-1.5 rounded-full bg-gold" />
+                  {message}
+                </span>
+              ))}
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {cards.map((card) => (
-          <Card
-            key={card.label}
-            className={`group relative overflow-hidden border border-border/40 transition-transform duration-300 hover:-translate-y-1 ${card.cardClass}`}
+      {/* Profile summary card */}
+      <Card className="glass border-border/40">
+        <CardContent className="flex flex-col gap-5 p-5 sm:p-6 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-4">
+            <Avatar className="size-16 ring-2 ring-gold/40 sm:size-20">
+              <AvatarFallback className="gradient-primary text-xl text-primary-foreground">
+                {getInitials(memberName)}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <div className="text-xl font-bold">
+                {memberName}
+                {rankTitle ? (
+                  <span className="ml-2 align-middle text-sm font-bold text-gold">
+                    — {rankTitle}
+                  </span>
+                ) : null}
+              </div>
+              <div className="mt-1 text-sm text-muted-foreground">{data?.user.email ?? user?.email}</div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 md:w-auto md:min-w-[420px]">
+            <div className="rounded-xl border border-border/40 bg-background/40 p-3">
+              <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                Member ID
+              </div>
+              <div className="mt-1 truncate text-sm font-semibold">{referralCode ?? "—"}</div>
+            </div>
+            <div className="rounded-xl border border-border/40 bg-background/40 p-3">
+              <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                Referred By
+              </div>
+              <div className="mt-1 truncate text-sm font-semibold">{referredBy}</div>
+            </div>
+            <div className="rounded-xl border border-border/40 bg-background/40 p-3">
+              <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                Join Date
+              </div>
+              <div className="mt-1 truncate text-sm font-semibold">
+                {joinDate
+                  ? new Date(joinDate).toLocaleDateString("en-PK", { dateStyle: "medium" })
+                  : "—"}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+        <CardContent className="flex flex-wrap items-center justify-between gap-3 border-t border-border/40 p-4 sm:px-6">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <KeyRound className="size-4 text-gold" />
+            Your Referral Code:{" "}
+            <span className="font-semibold tracking-[0.08em] text-foreground">
+              {referralCode ?? "-----"}
+            </span>
+          </div>
+          <Button
+            size="sm"
+            onClick={copyReferralCode}
+            className="gradient-gold border-0 text-gold-foreground shadow-[0_14px_30px_-18px_oklch(0.83_0.15_80)]"
           >
-            <div className="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full bg-white/35 blur-2xl" />
-            <CardContent className="relative p-5">
-              <div className="mb-3 flex items-center justify-between">
+            <Copy className="mr-2 size-4" /> Copy Code
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Status row: account/training/deposit/withdrawal */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Card className="glass border-border/40">
+          <CardContent className="space-y-2 p-5">
+            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <Trophy className="size-4 text-gold" /> Next Rank
+            </div>
+            {nextRankTier ? (
+              <>
+                <div className="text-lg font-semibold">{nextRankTier.name}</div>
+                <div className="text-sm text-muted-foreground">
+                  {riseCoinsToNextRank.toLocaleString()} Rise Coins to go
+                </div>
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-accent/80">
+                  <div
+                    className="h-full gradient-primary"
+                    style={{ width: `${nextRankProgress}%` }}
+                    aria-label="Next rank progress"
+                  />
+                </div>
+              </>
+            ) : (
+              <div className="text-lg font-semibold">Highest Rank Achieved</div>
+            )}
+          </CardContent>
+        </Card>
+        <Card className="glass border-border/40">
+          <CardContent className="space-y-2 p-5">
+            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <GraduationCap className="size-4" /> Training Status
+            </div>
+            <div className="text-lg font-semibold">
+              {data?.trainingSeatConfirmed ? "Seat Confirmed" : "Not Confirmed Yet"}
+            </div>
+            {!data?.trainingSeatConfirmed ? (
+              <Link to="/courses" className="text-sm font-medium text-primary hover:underline">
+                Confirm your seat →
+              </Link>
+            ) : null}
+          </CardContent>
+        </Card>
+        <Card className="glass border-border/40">
+          <CardContent className="space-y-2 p-5">
+            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <ShieldCheck className="size-4" /> Deposit Status
+            </div>
+            <div className="text-lg font-semibold">
+              {pendingDeposit ? "Pending review" : "No pending deposits"}
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="glass border-border/40">
+          <CardContent className="space-y-2 p-5">
+            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              <Wallet className="size-4" /> Withdrawal Status
+            </div>
+            <div className="text-lg font-semibold">
+              {(data?.stats.availableBalance ?? 0) > 0 ? "Ready to withdraw" : "No balance yet"}
+            </div>
+            <Link to="/wallet" className="text-sm font-medium text-primary hover:underline">
+              View wallet →
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Key stat tiles */}
+      <div>
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          Account Overview
+        </h2>
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {statTiles.map((card) => (
+            <Card
+              key={card.label}
+              className={`group relative overflow-hidden border border-border/40 transition-transform duration-300 hover:-translate-y-1 ${card.cardClass}`}
+            >
+              <div className="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full bg-white/35 blur-2xl" />
+              <CardContent className="relative p-5">
                 <div
-                  className={`grid size-10 place-items-center rounded-xl bg-white/55 backdrop-blur ${card.iconTint}`}
+                  className={`mb-3 grid size-10 place-items-center rounded-xl bg-white/55 backdrop-blur ${card.iconTint}`}
                 >
                   <card.icon className="size-5" />
                 </div>
-                <ArrowUpRight className="size-4 text-foreground/60 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-              </div>
-              <div className="text-2xl font-extrabold tracking-tight text-foreground">{card.value}</div>
-              <div className="mt-1 text-xs font-medium text-foreground/70">{card.label}</div>
-            </CardContent>
-          </Card>
-        ))}
+                <div className="text-2xl font-extrabold tracking-tight text-foreground">{card.value}</div>
+                <div className="mt-1 text-xs font-medium text-foreground/70">{card.label}</div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
 
+      {/* Team growth stats */}
+      <div>
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          Team Growth
+        </h2>
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {teamTiles.map((tile) => (
+            <Card key={tile.label} className="glass border-border/40">
+              <CardContent className="space-y-2 p-5">
+                <div className="grid size-10 place-items-center rounded-xl gradient-primary text-primary-foreground">
+                  <tile.icon className="size-5" />
+                </div>
+                <div className="text-2xl font-bold">{tile.value}</div>
+                <div className="text-xs text-muted-foreground">{tile.label}</div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* Approved plans + Reward rank progress */}
       <div className="grid gap-6 lg:grid-cols-[1.1fr,0.9fr]">
         <Card className="glass border-border/40">
           <CardHeader>
@@ -456,78 +651,18 @@ function Dashboard() {
                 All configured milestones have already been claimed.
               </div>
             )}
-            <div className="rounded-2xl border border-border/40 bg-background/30 p-4 text-sm text-muted-foreground">
-              Claimable milestones right now: {data?.rewardProgress.claimableMilestones.length ?? 0}
-            </div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="glass border-border/40">
-          <CardContent className="space-y-2 p-5">
-            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
-              <Trophy className="size-4 text-gold" /> Next Rank
-            </div>
-            {nextRankTier ? (
-              <>
-                <div className="text-lg font-semibold">{nextRankTier.name}</div>
-                <div className="text-sm text-muted-foreground">
-                  {riseCoinsToNextRank.toLocaleString()} Rise Coins to go
-                </div>
-              </>
-            ) : (
-              <div className="text-lg font-semibold">Highest Rank Achieved</div>
-            )}
-          </CardContent>
-        </Card>
-        <Card className="glass border-border/40">
-          <CardContent className="space-y-2 p-5">
-            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
-              <GraduationCap className="size-4" /> Training Status
-            </div>
-            <div className="text-lg font-semibold">
-              {data?.trainingSeatConfirmed ? "Seat Confirmed" : "Not Confirmed Yet"}
-            </div>
-            {!data?.trainingSeatConfirmed ? (
-              <Link to="/courses" className="text-sm font-medium text-primary hover:underline">
-                Confirm your seat →
-              </Link>
-            ) : null}
-          </CardContent>
-        </Card>
-        <Card className="glass border-border/40">
-          <CardContent className="space-y-2 p-5">
-            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
-              <ShieldCheck className="size-4" /> Deposit Status
-            </div>
-            <div className="text-lg font-semibold">
-              {pendingDeposit ? "Pending review" : "No pending deposits"}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="glass border-border/40">
-          <CardContent className="space-y-2 p-5">
-            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
-              <Wallet className="size-4" /> Withdrawal Status
-            </div>
-            <div className="text-lg font-semibold">
-              {formatCurrency(data?.stats.availableBalance ?? 0)} available
-            </div>
-            <Link to="/wallet" className="text-sm font-medium text-primary hover:underline">
-              View wallet →
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
-
+      {/* Referral network step breakdown */}
       <Card className="glass border-border/40">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="size-5" /> Referral Network
           </CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-3 gap-4">
+        <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {[
             {
               label: "Step 1",
@@ -581,6 +716,7 @@ function Dashboard() {
         </CardContent>
       </Card>
 
+      {/* Recent activity + Announcements */}
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="glass border-border/40">
           <CardHeader>
@@ -591,31 +727,42 @@ function Dashboard() {
               data.recentTransactions.map((transaction) => (
                 <div
                   key={transaction.id}
-                  className="rounded-2xl border border-border/40 bg-background/35 p-4"
+                  className="flex items-center justify-between gap-3 rounded-2xl border border-border/40 bg-background/35 p-4"
                 >
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`grid size-9 shrink-0 place-items-center rounded-xl ${
+                        transaction.direction === "debit"
+                          ? "bg-destructive/10 text-destructive"
+                          : "bg-success/10 text-success"
+                      }`}
+                    >
+                      <Wallet className="size-4" />
+                    </div>
                     <div>
                       <div className="font-semibold">{transaction.description}</div>
-                      <div className="mt-2 text-xs text-muted-foreground">
+                      <div className="mt-1 text-xs text-muted-foreground">
                         {new Date(transaction.createdAt).toLocaleString("en-PK", {
                           dateStyle: "medium",
                           timeStyle: "short",
                         })}
                       </div>
                     </div>
-                    <div
-                      className={`text-lg font-bold ${
-                        transaction.direction === "debit" ? "text-destructive" : "text-success"
-                      }`}
-                    >
-                      {transaction.direction === "debit" ? "-" : "+"}
-                      {formatCurrency(transaction.amount)}
-                    </div>
+                  </div>
+                  <div
+                    className={`shrink-0 text-lg font-bold ${
+                      transaction.direction === "debit" ? "text-destructive" : "text-success"
+                    }`}
+                  >
+                    {transaction.direction === "debit" ? "-" : "+"}
+                    {formatCurrency(transaction.amount)}
                   </div>
                 </div>
               ))
             ) : (
-              <div className="text-sm text-muted-foreground">No wallet activity yet.</div>
+              <div className="rounded-2xl border border-dashed border-border/40 p-6 text-sm text-muted-foreground">
+                No recent activity yet.
+              </div>
             )}
           </CardContent>
         </Card>
@@ -625,16 +772,6 @@ function Dashboard() {
             <CardTitle>Announcements</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="relative overflow-hidden rounded-2xl border border-gold/30 bg-gold/5 py-2.5">
-              <div className="animate-marquee flex w-max gap-10 whitespace-nowrap px-4 text-sm font-medium text-foreground">
-                {[...marqueeMessages, ...marqueeMessages].map((message, index) => (
-                  <span key={index} className="inline-flex items-center gap-2">
-                    <span className="size-1.5 rounded-full bg-gold" />
-                    {message}
-                  </span>
-                ))}
-              </div>
-            </div>
             {data?.announcements.length ? (
               data.announcements.map((announcement) => (
                 <div

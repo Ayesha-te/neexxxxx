@@ -535,7 +535,9 @@ function Landing() {
               <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                 Contact Number
               </div>
-              <div className="mt-1 text-sm font-semibold break-all">+92 320 7598146</div>
+              <div className="mt-1 text-sm font-semibold break-all">
+                {siteInfo?.contactDetails.phone2 ?? "+92 320 7598146"}
+              </div>
             </div>
           </div>
           <div className="glass rounded-2xl p-5 flex items-start gap-3 border border-border/40">
@@ -546,7 +548,9 @@ function Landing() {
               <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                 Official Email
               </div>
-              <div className="mt-1 text-sm font-semibold break-all">nexorise333@gmail.com</div>
+              <div className="mt-1 text-sm font-semibold break-all">
+                {siteInfo?.supportEmail ?? "nexorise333@gmail.com"}
+              </div>
             </div>
           </div>
           <div className="glass rounded-2xl p-5 flex items-start gap-3 border border-border/40">

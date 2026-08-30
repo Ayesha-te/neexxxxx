@@ -29,7 +29,7 @@ export function TopBar() {
   }, [dark]);
 
   return (
-    <header className="sticky top-0 z-30 glass border-b border-border/50 px-4 py-3 lg:px-8 flex items-center gap-3">
+    <header className="sticky top-0 z-30 border-b border-border/50 bg-background/95 backdrop-blur-md px-4 py-3 lg:px-8 flex items-center gap-3">
       <Drawer>
         <DrawerTrigger asChild>
           <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open navigation menu">

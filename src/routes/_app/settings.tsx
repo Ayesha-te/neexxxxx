@@ -290,12 +290,12 @@ function SettingsPage() {
             <ContactInfo
               icon={Phone}
               label="Contact Number"
-              value="+92 320 7598146"
+              value={siteInfo?.contactDetails.phone2 ?? "+92 320 7598146"}
             />
             <ContactInfo
               icon={Mail}
               label="Official Email"
-              value="nexorise333@gmail.com"
+              value={siteInfo?.supportEmail ?? "nexorise333@gmail.com"}
             />
             <ContactInfo
               icon={MapPin}
