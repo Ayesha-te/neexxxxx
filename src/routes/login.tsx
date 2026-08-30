@@ -97,8 +97,11 @@ function LoginPage() {
             />
           </div>
           <div className="space-y-2">
-            <div className="flex justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <Label>Password</Label>
+              <span className="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[11px] font-semibold text-primary">
+                Your account phone number is your password
+              </span>
               <Link to="/forgot-password" className="text-xs text-gold hover:underline">
                 Forgot?
               </Link>
@@ -106,7 +109,7 @@ function LoginPage() {
             <Input
               type="password"
               required
-              placeholder="********"
+              placeholder="Enter account phone number"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
             />
