@@ -190,6 +190,28 @@
     border: 1px solid color-mix(in oklab, var(--color-border) 78%, white 22%);
     box-shadow: var(--shadow-elegant);
   }
+  .dashboard-panel {
+    background: color-mix(in oklab, var(--card) 94%, white 6%);
+    border: 1px solid color-mix(in oklab, var(--border) 82%, white 18%);
+    border-radius: 1.25rem;
+    box-shadow: 0 18px 45px -32px rgba(38, 38, 38, 0.42);
+  }
+  .eyebrow {
+    color: var(--muted-foreground);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 750;
+    letter-spacing: -0.01em;
+  }
   .gradient-primary {
     background: var(--gradient-primary);
   }
