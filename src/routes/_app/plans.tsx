@@ -161,7 +161,7 @@ function Plans() {
                   {plan.riseCoins} Rise Coins on approval
                 </div>
                 <div className="mt-1 text-xs text-muted-foreground">
-                  Step income: {plan.level1Percent}% / {plan.level2Percent}% / {plan.level3Percent}%
+                  Three-level referral income eligibility
                 </div>
                 {latestPlanStatuses.get(plan.id) ? (
                   <div className="mt-3">

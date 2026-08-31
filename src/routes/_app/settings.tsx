@@ -290,7 +290,7 @@ function SettingsPage() {
             <ContactInfo
               icon={Phone}
               label="Contact Number"
-              value={siteInfo?.contactDetails.phone2 ?? "+92 320 7598146"}
+                value={siteInfo?.contactDetails.phone2 ?? "03207598146"}
             />
             <ContactInfo
               icon={Mail}

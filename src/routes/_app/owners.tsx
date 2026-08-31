@@ -28,7 +28,7 @@ const leaders = [
     quote:
       "Building more than a business — creating a vision, empowering people, and turning possibilities into progress.",
     tags: ["Leadership", "Strategy", "Innovation", "Growth"],
-    phone: "+92 320 7598146",
+    phone: "03207598146",
     email: "nexorise333@gmail.com",
   },
 ];

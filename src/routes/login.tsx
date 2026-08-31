@@ -121,8 +121,9 @@ function LoginPage() {
           >
             {submitting ? "Signing in..." : "Sign in"}
           </Button>
-          <div className="text-center text-sm text-muted-foreground">
-            New here? Ask an existing NexoRise member to create your account for you.
+          <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 text-center text-sm text-muted-foreground">
+            <p className="font-semibold text-foreground">Registration is currently handled by Admin.</p>
+            <p className="mt-1">Please contact Admin to request your account and receive your login details.</p>
           </div>
           <a
             href={getAdminWhatsAppLink(

@@ -96,7 +96,7 @@ function JoinOptionsPage() {
           <CardContent className="space-y-4">
             <div className="text-muted-foreground">
               Every approved plan adds Rise Coins to your rank journey and activates team income on the
-              {` ${data?.settings.referralRules.level1Percent ?? 30}% / ${data?.settings.referralRules.level2Percent ?? 15}% / ${data?.settings.referralRules.level3Percent ?? 5}% `}
+              Three-level referral income eligibility
               structure.
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -137,17 +137,17 @@ function JoinOptionsPage() {
               <MiniRule
                 icon={Users}
                 label="Step 1"
-                value={`${data?.settings.referralRules.level1Percent ?? 0}%`}
+                value="Eligible"
               />
               <MiniRule
                 icon={Coins}
                 label="Step 2"
-                value={`${data?.settings.referralRules.level2Percent ?? 0}%`}
+                value="Eligible"
               />
               <MiniRule
                 icon={ShieldCheck}
                 label="Step 3"
-                value={`${data?.settings.referralRules.level3Percent ?? 0}%`}
+                value="Eligible"
               />
             </div>
             <Link to="/referrals">

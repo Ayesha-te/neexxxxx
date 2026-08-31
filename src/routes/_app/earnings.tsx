@@ -170,7 +170,7 @@ function Earnings() {
               value={
                 referralRules
                   ? `${referralRules.level1Percent}% / ${referralRules.level2Percent}% / ${referralRules.level3Percent}% across 3 levels`
-                  : "48% / 18% / 10% across 3 levels"
+                  : "Three-level referral income structure"
               }
             />
             <RuleCard
@@ -290,7 +290,7 @@ function Earnings() {
                           ? `${referralRank.percents.direct}% / ${referralRank.percents.indirect}% / ${referralRank.percents.team}%`
                         : referralRules
                           ? `${referralRules.level1Percent}% / ${referralRules.level2Percent}% / ${referralRules.level3Percent}%`
-                            : "48% / 18% / 10%"
+                            : "Three-level referral income structure"
                     }
                   />
                   <Metric

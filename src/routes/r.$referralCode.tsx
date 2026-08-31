@@ -176,25 +176,23 @@ function ReferralPreviewPage() {
                 <PreviewStat
                   icon={Users}
                   label="Step 1 income"
-                  value={`${data.settings.referralRules.level1Percent}%`}
+                  value="Eligible"
                 />
                 <PreviewStat
                   icon={Gift}
                   label="Step 2 income"
-                  value={`${data.settings.referralRules.level2Percent}%`}
+                  value="Eligible"
                 />
                 <PreviewStat
                   icon={Wallet}
                   label="Step 3 income"
-                  value={`${data.settings.referralRules.level3Percent}%`}
+                  value="Eligible"
                 />
               </div>
               <div className="mt-4 rounded-2xl border border-border/40 bg-background/30 p-4 text-sm text-muted-foreground">
                 Total team commission:{" "}
                 <span className="font-semibold text-foreground">
-                  {data.settings.referralRules.level1Percent +
-                    data.settings.referralRules.level2Percent +
-                    data.settings.referralRules.level3Percent}
+                  Three-level referral structure
                   %
                 </span>
               </div>

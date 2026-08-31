@@ -103,10 +103,7 @@ function Referrals() {
       <div>
         <h1 className="text-3xl font-bold">Referral System</h1>
         <p className="text-muted-foreground">
-          Build only three steps and earn {data?.rank.percents.direct ?? 30}% /
-          {" "}
-          {data?.rank.percents.indirect ?? 15}% / {data?.rank.percents.team ?? 5}% on approved
-          team investments. Your current rank: {data?.rank.tier.title ?? "Starter"}.
+          Build your three-step referral team and earn income on approved team investments. Your current rank: {data?.rank.tier.title ?? "Starter"}.
         </p>
       </div>
 
@@ -165,17 +162,17 @@ function Referrals() {
           {
             label: "Step 1",
             count: data?.summary.level1 ?? 0,
-            detail: `${data?.rank.percents.direct ?? 30}% commission`,
+            detail: "Direct referral income",
           },
           {
             label: "Step 2",
             count: data?.summary.level2 ?? 0,
-            detail: `${data?.rank.percents.indirect ?? 15}% commission`,
+            detail: "Level 2 referral income",
           },
           {
             label: "Step 3",
             count: data?.summary.level3 ?? 0,
-            detail: `${data?.rank.percents.team ?? 5}% commission`,
+            detail: "Level 3 referral income",
           },
         ].map((item) => (
           <Card key={item.label} className="glass border-border/40">
