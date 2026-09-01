@@ -169,7 +169,7 @@ function Earnings() {
               label="Team commissions"
               value={
                 referralRules
-                  ? `${referralRules.level1Percent}% / ${referralRules.level2Percent}% / ${referralRules.level3Percent}% across 3 levels`
+                  ? "Three-level referral income structure"
                   : "Three-level referral income structure"
               }
             />
@@ -285,11 +285,11 @@ function Earnings() {
                     label="Referral unlock"
                     value={
                       item.plan
-                        ? `${item.plan.level1Percent}% / ${item.plan.level2Percent}% / ${item.plan.level3Percent}%`
+                        ? "Referral income eligibility"
                         : referralRank?.percents
-                          ? `${referralRank.percents.direct}% / ${referralRank.percents.indirect}% / ${referralRank.percents.team}%`
+                          ? "Referral income eligibility"
                         : referralRules
-                          ? `${referralRules.level1Percent}% / ${referralRules.level2Percent}% / ${referralRules.level3Percent}%`
+                          ? "Referral income eligibility"
                             : "Three-level referral income structure"
                     }
                   />
