@@ -179,6 +179,27 @@
     color: var(--foreground);
     font-feature-settings: "cv11", "ss01";
     min-height: 100vh;
+    overflow-x: hidden;
+  }
+}
+
+@media (max-width: 640px) {
+  .gradient-hero h1 {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    font-size: clamp(2.35rem, 12vw, 3.5rem);
+  }
+  .gradient-hero p {
+    max-width: 100%;
+  }
+  .gradient-hero .flex.gap-3 {
+    flex-wrap: wrap;
+  }
+  .gradient-hero .flex.gap-3 > a {
+    flex: 1 1 100%;
+  }
+  .gradient-hero .flex.gap-3 > a > button {
+    width: 100%;
   }
 }
 
