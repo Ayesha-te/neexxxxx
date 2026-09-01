@@ -5,7 +5,6 @@ import {
   Layers,
   Settings,
   TrendingUp,
-  Trophy,
   UserPlus,
   Users,
   Wallet,
@@ -14,7 +13,6 @@ import {
 
 export const appNavItems = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/join", label: "Join Options", icon: Trophy },
   { to: "/courses", label: "Courses", icon: BookOpen },
   { to: "/plans", label: "Investment Plans", icon: Layers },
   { to: "/earnings", label: "Earning System", icon: TrendingUp },
