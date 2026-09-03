@@ -263,6 +263,18 @@ function Plans() {
                   ) : null}
                 </div>
               ) : null}
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                {paymentMethods.map((method) => {
+                  const Icon = getPaymentMethodIcon(method.type);
+                  return (
+                    <div key={`details-${method.id}`} className="rounded-xl border border-border/40 bg-background/45 p-3 text-sm">
+                      <div className="flex items-center gap-2 font-semibold"><Icon className="size-4 text-gold" />{method.label}</div>
+                      {method.type === "bank" && method.bankName ? <div className="mt-1 text-muted-foreground">Bank: {method.bankName}</div> : null}
+                      <div className="mt-1 text-muted-foreground">Account: {method.accountNumber} ({method.accountHolderName})</div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
