@@ -85,7 +85,7 @@ function Plans() {
   const [joinData, setJoinData] = useState<JoinOptionsResponse | null>(null);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [selectedPlanId, setSelectedPlanId] = useState("");
-  const [selectedMethodType, setSelectedMethodType] = useState<PaymentMethod["type"] | "">("");
+  const [selectedMethodId, setSelectedMethodId] = useState("");
   const [manualTransactionId, setManualTransactionId] = useState("");
   const [payerAccountNumber, setPayerAccountNumber] = useState("");
   const [payerAccountHolderName, setPayerAccountHolderName] = useState("");
@@ -115,7 +115,8 @@ function Plans() {
   }, [token]);
 
   const selectedPlan = data?.plans.find((plan) => plan.id === selectedPlanId) ?? null;
-  const selectedMethod = paymentMethods.find((method) => method.type === selectedMethodType) ?? null;
+  const selectedMethod = paymentMethods.find((method) => method.id === selectedMethodId) ?? null;
+  const selectedMethodType = selectedMethod?.type ?? "";
   const latestPlanStatuses = useMemo(() => {
     const statuses = new Map<string, string>();
 
@@ -221,12 +222,12 @@ function Plans() {
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {paymentMethods.map((method) => {
                   const Icon = getPaymentMethodIcon(method.type);
-                  const isSelected = selectedMethodType === method.type;
+                  const isSelected = selectedMethodId === method.id;
                   return (
                     <button
                       key={method.id}
                       type="button"
-                      onClick={() => setSelectedMethodType(method.type)}
+                      onClick={() => setSelectedMethodId(method.id)}
                       className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-left text-sm font-medium transition-colors ${
                         isSelected
                           ? "border-primary bg-primary/10 text-foreground"
@@ -282,7 +283,7 @@ function Plans() {
             className="space-y-4"
             onSubmit={async (event) => {
               event.preventDefault();
-              if (!token || !selectedPlan || !selectedMethodType) {
+              if (!token || !selectedPlan || !selectedMethod) {
                 toast.error("Choose a plan and a payment method first.");
                 return;
               }
@@ -315,7 +316,7 @@ function Plans() {
                 });
                 toast.success("Deposit submitted. Admin can now review it and activate the plan.");
                 setSelectedPlanId("");
-                setSelectedMethodType("");
+                setSelectedMethodId("");
                 setManualTransactionId("");
                 setPayerAccountNumber("");
                 setPayerAccountHolderName("");
@@ -402,7 +403,7 @@ function Plans() {
             </div>
             <Button
               type="submit"
-              disabled={submitting || !selectedPlan || !selectedMethodType}
+              disabled={submitting || !selectedPlan || !selectedMethod}
               className="gradient-primary text-primary-foreground"
             >
               {submitting ? "Submitting..." : "Send Deposit for Approval"}
