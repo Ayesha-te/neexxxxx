@@ -20,17 +20,7 @@ const leaders = [
     tags: ["Vision", "Leadership", "Innovation", "Excellence"],
     phone: "03057410110",
     email: "sardarlaeiqahmad@gmail.com",
-  },
-  {
-    name: "Yashfa Mushtaq",
-    role: "Co-Founder & Chief Operating Officer (COO)",
-    bio: "A visionary leader dedicated to transforming ideas into meaningful digital opportunities. As Co-Founder & COO, Yashfa Mushtaq oversees the company's day-to-day operations, strategic execution, team development, community management, and long-term growth initiatives. With a strong focus on leadership, innovation, transparency, and sustainable growth, she works closely with the team to build an environment where ambition meets opportunity and every individual is encouraged to grow.",
-    quote:
-      "Building more than a business — creating a vision, empowering people, and turning possibilities into progress.",
-    tags: ["Leadership", "Strategy", "Innovation", "Growth"],
-    phone: "03207598146",
-    email: "nexorise333@gmail.com",
-  },
+  }
 ];
 
 function OwnersPage() {
