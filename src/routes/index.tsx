@@ -14,6 +14,26 @@ type AboutUsContent = {
   valuesText: string;
 };
 
+type SiteContactInfo = {
+  supportEmail: string;
+  contactDetails: {
+    phone1: string;
+    phone2: string;
+    email: string;
+    location: string;
+  };
+};
+
+const DEFAULT_CONTACT_INFO: SiteContactInfo = {
+  supportEmail: "nexorise333@gmail.com",
+  contactDetails: {
+    phone1: "03057410110",
+    phone2: "03290263136",
+    email: "nexorise333@gmail.com",
+    location: "Sargodha",
+  },
+};
+
 const DEFAULT_ABOUT_US: AboutUsContent = {
   intro: `${BRAND_NAME} is a growth-focused platform dedicated to helping individuals develop practical skills, build confidence, strengthen leadership abilities, and explore modern business opportunities.`,
   secondary: "We believe that true growth comes through learning, consistency, teamwork, and continuous self-development.",
@@ -28,12 +48,19 @@ const courses = ["Network Marketing Fundamentals", " Sales & Closing Mastery", "
 
 function HomePage() {
   const [aboutUs, setAboutUs] = useState<AboutUsContent>(DEFAULT_ABOUT_US);
+  const [contactInfo, setContactInfo] = useState<SiteContactInfo>(DEFAULT_CONTACT_INFO);
 
   useEffect(() => {
-    void apiRequest<{ aboutUs?: AboutUsContent }>("/public/site-info")
+    void apiRequest<{ aboutUs?: AboutUsContent } & Partial<SiteContactInfo>>("/public/site-info")
       .then((response) => {
         if (response.aboutUs) {
           setAboutUs(response.aboutUs);
+        }
+        if (response.contactDetails) {
+          setContactInfo({
+            supportEmail: response.supportEmail ?? DEFAULT_CONTACT_INFO.supportEmail,
+            contactDetails: response.contactDetails,
+          });
         }
       })
       .catch(() => null);
@@ -44,7 +71,7 @@ function HomePage() {
 <section id="about" className="mx-auto max-w-5xl scroll-mt-24 px-5 py-16 text-center lg:px-10"><p className="eyebrow">About Us</p><h2 className="mt-3 text-4xl font-black">Welcome to {BRAND_NAME} </h2><p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-muted-foreground">{aboutUs.intro}</p><p className="mx-auto mt-4 max-w-3xl leading-7 text-muted-foreground">{aboutUs.secondary}</p><div className="mt-8 grid gap-4 text-left md:grid-cols-3">{[[" Our Mission", aboutUs.missionText], [" Our Vision", aboutUs.visionText], [" Core Values", aboutUs.valuesText]].map(([title, text]) => <div className="dashboard-panel p-5" key={title}><h3 className="font-bold text-primary">{title}</h3><p className="mt-2 text-sm leading-6 text-muted-foreground">{text}</p></div>)}</div></section>
 <section id="departments" className="mx-auto max-w-7xl scroll-mt-24 px-5 py-16 lg:px-10"><div className="text-center"><p className="eyebrow">Working Departments</p><h2 className="mt-3 text-4xl font-black">Support for every stage of growth</h2></div><div className="mt-8 grid gap-5 md:grid-cols-3">{departments.map((d) => <div className="dashboard-panel p-6" key={d.title}><h3 className="text-xl font-bold text-primary">{d.title}</h3><ul className="mt-4 space-y-2 text-sm text-muted-foreground">{d.items.map((item) => <li key={item}> {item}</li>)}</ul></div>)}</div></section>
 <section id="courses" className="mx-auto max-w-7xl scroll-mt-24 px-5 py-16 lg:px-10"><div className="text-center"><p className="eyebrow">Explore Training</p><h2 className="mt-3 text-4xl font-black">Build practical skills</h2></div><div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{courses.map((course) => <div className="dashboard-panel p-4" key={course}><BookOpen className="mb-3 size-5 text-primary" /><h3 className="font-semibold">{course}</h3><p className="mt-1 text-xs text-muted-foreground">Practical guidance to help you learn and grow.</p></div>)}</div><div className="mt-8 text-center"><Link to="/login"><Button className="gradient-primary text-primary-foreground">Confirm your seat <ArrowRight className="ml-2 size-4" /></Button></Link></div></section>
-<section id="contact" className="mx-auto max-w-7xl scroll-mt-24 px-5 py-16 lg:px-10"><div className="dashboard-panel p-6"><div className="text-center"><p className="eyebrow">Contact Us</p><h2 className="mt-3 text-3xl font-black">Need help? Contact Admin</h2></div><div className="mx-auto mt-6 grid max-w-4xl gap-3 sm:grid-cols-2 lg:grid-cols-4">{[["Phone 1", "03057410110"], ["Phone 2", "03290263136"], ["Email", "nexorise333@gmail.com"], ["Location", "Sargodha"]].map(([label, value]) => <div className="rounded-xl bg-muted p-4" key={label}><p className="eyebrow">{label}</p><p className="mt-2 break-all font-semibold">{value}</p></div>)}</div></div></section>
+<section id="contact" className="mx-auto max-w-7xl scroll-mt-24 px-5 py-16 lg:px-10"><div className="dashboard-panel p-6"><div className="text-center"><p className="eyebrow">Contact Us</p><h2 className="mt-3 text-3xl font-black">Need help? Contact Admin</h2></div><div className="mx-auto mt-6 grid max-w-4xl gap-3 sm:grid-cols-2 lg:grid-cols-4">{[["Phone 1", contactInfo.contactDetails.phone1], ["Phone 2", contactInfo.contactDetails.phone2], ["Email", contactInfo.supportEmail], ["Location", contactInfo.contactDetails.location]].map(([label, value]) => <div className="rounded-xl bg-muted p-4" key={label}><p className="eyebrow">{label}</p><p className="mt-2 break-all font-semibold">{value}</p></div>)}</div></div></section>
 <section className="mx-5 mb-16 rounded-3xl bg-foreground px-6 py-12 text-center text-background lg:mx-auto lg:max-w-7xl"><Crown className="mx-auto size-8 text-primary" /><h2 className="mt-3 text-3xl font-black">Your journey starts now.</h2><Link to="/login" className="mt-6 inline-flex"><Button className="bg-primary text-primary-foreground">Get started <ArrowRight className="ml-2 size-4" /></Button></Link></section></main><footer className="border-t border-border px-5 py-8 text-center text-sm text-muted-foreground">Copyright {new Date().getFullYear()} {BRAND_NAME}. Learn  Earn  Grow.</footer></div>; }
 
 
