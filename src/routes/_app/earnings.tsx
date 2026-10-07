@@ -121,7 +121,7 @@ function Earnings() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Earning System</h1>
+        <h1 className="text-3xl font-bold">Current Income</h1>
         <p className="text-muted-foreground">
           Approved plans add personal Rise Coins, referral team activity adds team Rise Coins, and your
           combined total unlocks real rank levels with 3-step referral income.
