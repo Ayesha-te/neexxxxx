@@ -9,31 +9,32 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
-import { Route as CoursesRouteImport } from './routes/courses'
-import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as RReferralCodeRouteImport } from './routes/r.$referralCode'
-import { Route as AppWalletRouteImport } from './routes/_app/wallet'
-import { Route as AppSettingsRouteImport } from './routes/_app/settings'
-import { Route as AppRewardsRouteImport } from './routes/_app/rewards'
-import { Route as AppReferralsRouteImport } from './routes/_app/referrals'
-import { Route as AppPlansRouteImport } from './routes/_app/plans'
-import { Route as AppOwnersRouteImport } from './routes/_app/owners'
-import { Route as AppJoinRouteImport } from './routes/_app/join'
-import { Route as AppEarningsRouteImport } from './routes/_app/earnings'
-import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as CoursesRouteImport } from './routes/courses'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppCreateAccountRouteImport } from './routes/_app/create-account'
+import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
+import { Route as AppEarningsRouteImport } from './routes/_app/earnings'
+import { Route as AppJoinRouteImport } from './routes/_app/join'
+import { Route as AppLeaderboardRouteImport } from './routes/_app/leaderboard'
+import { Route as AppOwnersRouteImport } from './routes/_app/owners'
+import { Route as AppPlansRouteImport } from './routes/_app/plans'
+import { Route as AppReferralsRouteImport } from './routes/_app/referrals'
+import { Route as AppRewardsRouteImport } from './routes/_app/rewards'
+import { Route as AppSettingsRouteImport } from './routes/_app/settings'
+import { Route as AppTotalInvestmentRouteImport } from './routes/_app/total-investment'
+import { Route as AppWalletRouteImport } from './routes/_app/wallet'
+import { Route as RReferralCodeRouteImport } from './routes/r.$referralCode'
 
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
-  id: '/forgot-password',
-  path: '/forgot-password',
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CoursesRoute = CoursesRouteImport.update({
@@ -41,58 +42,19 @@ const CoursesRoute = CoursesRouteImport.update({
   path: '/courses',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppRoute = AppRouteImport.update({
-  id: '/_app',
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RReferralCodeRoute = RReferralCodeRouteImport.update({
-  id: '/r/$referralCode',
-  path: '/r/$referralCode',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AppWalletRoute = AppWalletRouteImport.update({
-  id: '/wallet',
-  path: '/wallet',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppSettingsRoute = AppSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppRewardsRoute = AppRewardsRouteImport.update({
-  id: '/rewards',
-  path: '/rewards',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppReferralsRoute = AppReferralsRouteImport.update({
-  id: '/referrals',
-  path: '/referrals',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppPlansRoute = AppPlansRouteImport.update({
-  id: '/plans',
-  path: '/plans',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppOwnersRoute = AppOwnersRouteImport.update({
-  id: '/owners',
-  path: '/owners',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppJoinRoute = AppJoinRouteImport.update({
-  id: '/join',
-  path: '/join',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppEarningsRoute = AppEarningsRouteImport.update({
-  id: '/earnings',
-  path: '/earnings',
+const AppCreateAccountRoute = AppCreateAccountRouteImport.update({
+  id: '/create-account',
+  path: '/create-account',
   getParentRoute: () => AppRoute,
 } as any)
 const AppDashboardRoute = AppDashboardRouteImport.update({
@@ -100,10 +62,60 @@ const AppDashboardRoute = AppDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AppRoute,
 } as any)
-const AppCreateAccountRoute = AppCreateAccountRouteImport.update({
-  id: '/create-account',
-  path: '/create-account',
+const AppEarningsRoute = AppEarningsRouteImport.update({
+  id: '/earnings',
+  path: '/earnings',
   getParentRoute: () => AppRoute,
+} as any)
+const AppJoinRoute = AppJoinRouteImport.update({
+  id: '/join',
+  path: '/join',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLeaderboardRoute = AppLeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppOwnersRoute = AppOwnersRouteImport.update({
+  id: '/owners',
+  path: '/owners',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPlansRoute = AppPlansRouteImport.update({
+  id: '/plans',
+  path: '/plans',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppReferralsRoute = AppReferralsRouteImport.update({
+  id: '/referrals',
+  path: '/referrals',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRewardsRoute = AppRewardsRouteImport.update({
+  id: '/rewards',
+  path: '/rewards',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTotalInvestmentRoute = AppTotalInvestmentRouteImport.update({
+  id: '/total-investment',
+  path: '/total-investment',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppWalletRoute = AppWalletRouteImport.update({
+  id: '/wallet',
+  path: '/wallet',
+  getParentRoute: () => AppRoute,
+} as any)
+const RReferralCodeRoute = RReferralCodeRouteImport.update({
+  id: '/r/$referralCode',
+  path: '/r/$referralCode',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -115,11 +127,13 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AppDashboardRoute
   '/earnings': typeof AppEarningsRoute
   '/join': typeof AppJoinRoute
+  '/leaderboard': typeof AppLeaderboardRoute
   '/owners': typeof AppOwnersRoute
   '/plans': typeof AppPlansRoute
   '/referrals': typeof AppReferralsRoute
   '/rewards': typeof AppRewardsRoute
   '/settings': typeof AppSettingsRoute
+  '/total-investment': typeof AppTotalInvestmentRoute
   '/wallet': typeof AppWalletRoute
   '/r/$referralCode': typeof RReferralCodeRoute
 }
@@ -132,11 +146,13 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AppDashboardRoute
   '/earnings': typeof AppEarningsRoute
   '/join': typeof AppJoinRoute
+  '/leaderboard': typeof AppLeaderboardRoute
   '/owners': typeof AppOwnersRoute
   '/plans': typeof AppPlansRoute
   '/referrals': typeof AppReferralsRoute
   '/rewards': typeof AppRewardsRoute
   '/settings': typeof AppSettingsRoute
+  '/total-investment': typeof AppTotalInvestmentRoute
   '/wallet': typeof AppWalletRoute
   '/r/$referralCode': typeof RReferralCodeRoute
 }
@@ -151,11 +167,13 @@ export interface FileRoutesById {
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/earnings': typeof AppEarningsRoute
   '/_app/join': typeof AppJoinRoute
+  '/_app/leaderboard': typeof AppLeaderboardRoute
   '/_app/owners': typeof AppOwnersRoute
   '/_app/plans': typeof AppPlansRoute
   '/_app/referrals': typeof AppReferralsRoute
   '/_app/rewards': typeof AppRewardsRoute
   '/_app/settings': typeof AppSettingsRoute
+  '/_app/total-investment': typeof AppTotalInvestmentRoute
   '/_app/wallet': typeof AppWalletRoute
   '/r/$referralCode': typeof RReferralCodeRoute
 }
@@ -170,11 +188,13 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/earnings'
     | '/join'
+    | '/leaderboard'
     | '/owners'
     | '/plans'
     | '/referrals'
     | '/rewards'
     | '/settings'
+    | '/total-investment'
     | '/wallet'
     | '/r/$referralCode'
   fileRoutesByTo: FileRoutesByTo
@@ -187,11 +207,13 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/earnings'
     | '/join'
+    | '/leaderboard'
     | '/owners'
     | '/plans'
     | '/referrals'
     | '/rewards'
     | '/settings'
+    | '/total-investment'
     | '/wallet'
     | '/r/$referralCode'
   id:
@@ -205,11 +227,13 @@ export interface FileRouteTypes {
     | '/_app/dashboard'
     | '/_app/earnings'
     | '/_app/join'
+    | '/_app/leaderboard'
     | '/_app/owners'
     | '/_app/plans'
     | '/_app/referrals'
     | '/_app/rewards'
     | '/_app/settings'
+    | '/_app/total-investment'
     | '/_app/wallet'
     | '/r/$referralCode'
   fileRoutesById: FileRoutesById
@@ -225,25 +249,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/forgot-password': {
-      id: '/forgot-password'
-      path: '/forgot-password'
-      fullPath: '/forgot-password'
-      preLoaderRoute: typeof ForgotPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/courses': {
-      id: '/courses'
-      path: '/courses'
-      fullPath: '/courses'
-      preLoaderRoute: typeof CoursesRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app': {
@@ -253,74 +263,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/courses': {
+      id: '/courses'
+      path: '/courses'
+      fullPath: '/courses'
+      preLoaderRoute: typeof CoursesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/r/$referralCode': {
-      id: '/r/$referralCode'
-      path: '/r/$referralCode'
-      fullPath: '/r/$referralCode'
-      preLoaderRoute: typeof RReferralCodeRouteImport
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/wallet': {
-      id: '/_app/wallet'
-      path: '/wallet'
-      fullPath: '/wallet'
-      preLoaderRoute: typeof AppWalletRouteImport
-      parentRoute: typeof AppRoute
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_app/settings': {
-      id: '/_app/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof AppSettingsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/rewards': {
-      id: '/_app/rewards'
-      path: '/rewards'
-      fullPath: '/rewards'
-      preLoaderRoute: typeof AppRewardsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/referrals': {
-      id: '/_app/referrals'
-      path: '/referrals'
-      fullPath: '/referrals'
-      preLoaderRoute: typeof AppReferralsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/plans': {
-      id: '/_app/plans'
-      path: '/plans'
-      fullPath: '/plans'
-      preLoaderRoute: typeof AppPlansRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/owners': {
-      id: '/_app/owners'
-      path: '/owners'
-      fullPath: '/owners'
-      preLoaderRoute: typeof AppOwnersRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/join': {
-      id: '/_app/join'
-      path: '/join'
-      fullPath: '/join'
-      preLoaderRoute: typeof AppJoinRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/earnings': {
-      id: '/_app/earnings'
-      path: '/earnings'
-      fullPath: '/earnings'
-      preLoaderRoute: typeof AppEarningsRouteImport
+    '/_app/create-account': {
+      id: '/_app/create-account'
+      path: '/create-account'
+      fullPath: '/create-account'
+      preLoaderRoute: typeof AppCreateAccountRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/dashboard': {
@@ -330,12 +298,82 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/create-account': {
-      id: '/_app/create-account'
-      path: '/create-account'
-      fullPath: '/create-account'
-      preLoaderRoute: typeof AppCreateAccountRouteImport
+    '/_app/earnings': {
+      id: '/_app/earnings'
+      path: '/earnings'
+      fullPath: '/earnings'
+      preLoaderRoute: typeof AppEarningsRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/_app/join': {
+      id: '/_app/join'
+      path: '/join'
+      fullPath: '/join'
+      preLoaderRoute: typeof AppJoinRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/leaderboard': {
+      id: '/_app/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof AppLeaderboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/owners': {
+      id: '/_app/owners'
+      path: '/owners'
+      fullPath: '/owners'
+      preLoaderRoute: typeof AppOwnersRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/plans': {
+      id: '/_app/plans'
+      path: '/plans'
+      fullPath: '/plans'
+      preLoaderRoute: typeof AppPlansRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/referrals': {
+      id: '/_app/referrals'
+      path: '/referrals'
+      fullPath: '/referrals'
+      preLoaderRoute: typeof AppReferralsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/rewards': {
+      id: '/_app/rewards'
+      path: '/rewards'
+      fullPath: '/rewards'
+      preLoaderRoute: typeof AppRewardsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/total-investment': {
+      id: '/_app/total-investment'
+      path: '/total-investment'
+      fullPath: '/total-investment'
+      preLoaderRoute: typeof AppTotalInvestmentRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/wallet': {
+      id: '/_app/wallet'
+      path: '/wallet'
+      fullPath: '/wallet'
+      preLoaderRoute: typeof AppWalletRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/r/$referralCode': {
+      id: '/r/$referralCode'
+      path: '/r/$referralCode'
+      fullPath: '/r/$referralCode'
+      preLoaderRoute: typeof RReferralCodeRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -345,11 +383,13 @@ interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
   AppEarningsRoute: typeof AppEarningsRoute
   AppJoinRoute: typeof AppJoinRoute
+  AppLeaderboardRoute: typeof AppLeaderboardRoute
   AppOwnersRoute: typeof AppOwnersRoute
   AppPlansRoute: typeof AppPlansRoute
   AppReferralsRoute: typeof AppReferralsRoute
   AppRewardsRoute: typeof AppRewardsRoute
   AppSettingsRoute: typeof AppSettingsRoute
+  AppTotalInvestmentRoute: typeof AppTotalInvestmentRoute
   AppWalletRoute: typeof AppWalletRoute
 }
 
@@ -358,11 +398,13 @@ const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
   AppEarningsRoute: AppEarningsRoute,
   AppJoinRoute: AppJoinRoute,
+  AppLeaderboardRoute: AppLeaderboardRoute,
   AppOwnersRoute: AppOwnersRoute,
   AppPlansRoute: AppPlansRoute,
   AppReferralsRoute: AppReferralsRoute,
   AppRewardsRoute: AppRewardsRoute,
   AppSettingsRoute: AppSettingsRoute,
+  AppTotalInvestmentRoute: AppTotalInvestmentRoute,
   AppWalletRoute: AppWalletRoute,
 }
 
