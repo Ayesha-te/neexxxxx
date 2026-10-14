@@ -57,7 +57,37 @@ type WalletResponse = {
   }>;
 };
 
-const BANK_SUB_TYPES = ["Pesa", "Adapay", "UPaisa", "Other bank"] as const;
+const BANK_SUB_TYPES = [
+  "Habib Bank Limited (HBL)",
+  "United Bank Limited (UBL)",
+  "MCB Bank",
+  "National Bank of Pakistan",
+  "Allied Bank",
+  "Bank Alfalah",
+  "Askari Bank",
+  "Faysal Bank",
+  "Meezan Bank",
+  "Bank Al Habib",
+  "Standard Chartered Pakistan",
+  "Soneri Bank",
+  "JS Bank",
+  "Silk Bank",
+  "Summit Bank",
+  "The Bank of Punjab",
+  "The Bank of Khyber",
+  "Sindh Bank",
+  "Dubai Islamic Bank Pakistan",
+  "Al Baraka Bank Pakistan",
+  "BankIslami Pakistan",
+  "MCB Islamic Bank",
+  "Samba Bank",
+  "First Women Bank",
+  "U Microfinance Bank (UPaisa)",
+  "NRSP Microfinance Bank",
+  "FINCA Microfinance Bank",
+  "Khushhali Microfinance Bank",
+  "Other bank",
+] as const;
 
 export const Route = createFileRoute("/_app/wallet")({
   head: () => ({ meta: [{ title: pageTitle("Wallet") }] }),
@@ -72,7 +102,7 @@ function WalletPage() {
   const [accountType, setAccountType] = useState<
     "easypaisa" | "jazzcash" | "bank_transfer" | "binance"
   >("easypaisa");
-  const [bankSubType, setBankSubType] = useState<(typeof BANK_SUB_TYPES)[number]>("Pesa");
+  const [bankSubType, setBankSubType] = useState<(typeof BANK_SUB_TYPES)[number]>(BANK_SUB_TYPES[0]);
   const [bankOtherName, setBankOtherName] = useState("");
   const [accountDetails, setAccountDetails] = useState("");
   const [note, setNote] = useState("");
@@ -230,7 +260,7 @@ function WalletPage() {
                   toast.success("Withdrawal request submitted for admin review.");
                   setAmount("");
                   setAccountType("easypaisa");
-                  setBankSubType("Pesa");
+                  setBankSubType(BANK_SUB_TYPES[0]);
                   setBankOtherName("");
                   setAccountDetails("");
                   setNote("");
