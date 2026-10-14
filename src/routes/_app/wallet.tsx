@@ -38,6 +38,7 @@ type WalletResponse = {
     referenceId: string | null;
     referenceType: string | null;
     createdAt: string;
+    riseCoinsEarned?: number;
   }>;
   withdrawals: Array<{
     id: string;
@@ -448,6 +449,11 @@ function WalletPage() {
                       timeStyle: "short",
                     })}
                   </div>
+                  {transaction.riseCoinsEarned ? (
+                    <div className="mt-1 text-xs font-semibold text-primary">
+                      +{transaction.riseCoinsEarned.toLocaleString()} Rise Coins
+                    </div>
+                  ) : null}
                 </div>
                 <div className="text-right">
                   <div
