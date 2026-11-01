@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { BrandLockup } from "@/components/BrandLockup";
 import { BRAND_NAME, pageTitle } from "@/lib/brand";
 import { apiRequest } from "@/lib/api";
+import { featuredCourses } from "@/lib/featuredCourses";
 
 type AboutUsContent = {
   intro: string;
@@ -44,7 +45,7 @@ const DEFAULT_ABOUT_US: AboutUsContent = {
 
 export const Route = createFileRoute("/")({ head: () => ({ meta: [{ title: pageTitle("Home") }] }), component: HomePage });
 const departments = [{ title: "Business Development", items: ["Business Development", "Business Growth", "Member/Customer Communication", "Opportunity Development", "Business Support", "Team/Business Expansion"] }, { title: "Leadership & Training", items: ["Leadership Development", "Beginner Training", "Trainer Sessions", "Member Guidance", "Team Development", "Skills Development", "Personal Growth"] }, { title: "E-Commerce", items: ["E-Commerce Activities", "Online Selling", "Product/Service Management", "Customer Handling", "E-Commerce Development", "Online Business Growth"] }];
-const courses = ["Network Marketing Fundamentals", " Sales & Closing Mastery", " Leadership & Team Building", "- Communication Skills", " Lead Generation", " Social Media Marketing", " Personal Branding", " Public Speaking & Presentation", " Customer Follow-Up Skills", " Digital Marketing Basics"];
+const courses = featuredCourses;
 
 function HomePage() {
   const [aboutUs, setAboutUs] = useState<AboutUsContent>(DEFAULT_ABOUT_US);
