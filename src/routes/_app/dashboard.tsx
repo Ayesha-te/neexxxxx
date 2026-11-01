@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowUpRight, Coins, Copy, Gift, KeyRound, Megaphone, Users, Wallet } from "lucide-react";
+import { ArrowUpRight, Coins, Copy, Gift, KeyRound, Megaphone, MessageCircle, Users, Wallet } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Bar, BarChart, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { toast } from "sonner";
@@ -8,6 +8,42 @@ import { apiRequest, type AppUser } from "@/lib/api";
 import { useAppAuth } from "@/lib/auth";
 import { useCurrency } from "@/lib/currency";
 import { levelBenefits, milestoneRewards } from "@/lib/rewards-system";
+import { getAdminWhatsAppLink } from "@/lib/whatsapp";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+
+type SiteContactInfo = { adminWhatsApp?: string };
+
+function ContactUsDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+  const [siteInfo, setSiteInfo] = useState<SiteContactInfo | null>(null);
+  useEffect(() => { if (open) void apiRequest<SiteContactInfo>("/public/site-info").then(setSiteInfo).catch(() => setSiteInfo({})); }, [open]);
+  const hasNumber = Boolean(siteInfo?.adminWhatsApp);
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2"><MessageCircle className="size-5 text-primary" /> Contact Us</DialogTitle>
+        </DialogHeader>
+        <p dir="rtl" lang="ur" className="text-right text-sm leading-8 text-foreground">
+          اگر آپ کو NexoRise استعمال کرتے ہوئے کسی بھی قسم کا مسئلہ پیش آ رہا ہے یا آپ کو کسی رہنمائی کی ضرورت ہے، تو براہِ کرم ہمارے ایڈمن سے رابطہ کریں۔ ہماری ٹیم آپ کی رہنمائی کے لیے موجود ہے۔
+        </p>
+        {siteInfo === null ? (
+          <p className="text-sm text-muted-foreground">Loading admin contact details...</p>
+        ) : hasNumber ? (
+          <a href={getAdminWhatsAppLink(siteInfo?.adminWhatsApp)} target="_blank" rel="noreferrer">
+            <Button className="gradient-primary w-full text-primary-foreground">
+              <MessageCircle className="mr-2 size-4" /> Contact on WhatsApp
+            </Button>
+          </a>
+        ) : (
+          <p className="text-sm text-destructive">
+            Admin WhatsApp number has not been configured yet. Please try again later.
+          </p>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 type DashboardResponse = { user: AppUser; stats: { totalInvestment: number; totalRiseCoins: number; walletBalance: number; availableBalance: number; totalCommissionEarned: number; totalRewardValue: number; totalWithdrawnIncome: number; accountType: string }; referralSummary: { level1: number; level2: number; level3: number }; announcements: Array<{ id: string; title: string; message: string }>; recentTransactions: Array<{ id: string; amount: number; direction: "credit" | "debit"; description: string; createdAt: string; type?: string; riseCoinsEarned?: number }> };
 
@@ -21,7 +57,7 @@ function maskEmail(email?: string | null) {
 export const Route = createFileRoute("/_app/dashboard")({ head: () => ({ meta: [{ title: pageTitle("Dashboard") }] }), component: Dashboard });
 
 function Dashboard() {
-  const { token, user } = useAppAuth(); const { currency, format, toggle } = useCurrency(); const [data, setData] = useState<DashboardResponse | null>(null); const [feed, setFeed] = useState<Array<{ id: string; type: "signup" | "withdrawal" | "reward_claimed"; name: string; planAmount?: number; method?: string; amount?: number }>>([]);
+  const { token, user } = useAppAuth(); const { currency, format, toggle } = useCurrency(); const [data, setData] = useState<DashboardResponse | null>(null); const [feed, setFeed] = useState<Array<{ id: string; type: "signup" | "withdrawal" | "reward_claimed"; name: string; planAmount?: number; method?: string; amount?: number }>>([]); const [contactOpen, setContactOpen] = useState(false);
   useEffect(() => { if (!token) return; const load = () => void apiRequest<DashboardResponse>("/user/dashboard", { token }).then(setData).catch(() => null); load(); const timer = window.setInterval(load, 30000); return () => window.clearInterval(timer); }, [token]);
   useEffect(() => { void apiRequest<{ items: typeof feed }>("/public/activity-feed").then((r) => setFeed(r.items ?? [])).catch(() => null); }, []);
   const d = data?.stats; const member = data?.user ?? user; const coins = d?.totalRiseCoins ?? 0; const next = levelBenefits.find((l) => l.riseCoinsRequired > coins) ?? levelBenefits.at(-1)!; const progress = Math.min(100, coins / next.riseCoinsRequired * 100); const teams = data?.referralSummary; const totalTeam = (teams?.level1 ?? 0) + (teams?.level2 ?? 0) + (teams?.level3 ?? 0); const initials = (member?.name ?? "NX").split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase(); const formatFeedMessage = (item: (typeof feed)[number]) => { if (item.type === "withdrawal") return `${item.name} received ${format(item.amount ?? 0)} withdrawal via ${(item.method ?? "").replace(/_/g, " ") || "their payment method"}`; if (item.type === "reward_claimed") return `${item.name} claimed a ${format(item.amount ?? 0)} reward`; return `${item.name} started with the ${format(item.planAmount ?? 0)} plan on NexoRise`; }; const ticker = useMemo(() => ["Welcome to your NexoRise workspace", ...feed.slice(0, 5).map(formatFeedMessage)], [feed, format]);
@@ -39,5 +75,7 @@ function Dashboard() {
     <section className="dashboard-panel p-5 sm:p-6"><h2 className="section-title"><Gift className="size-5 text-primary" /> Reward plan</h2><p className="mt-1 text-sm text-muted-foreground">Milestones from your existing rewards program.</p><div className="mt-4 overflow-x-auto"><table className="w-full min-w-[520px] text-left text-sm"><thead className="border-b border-border text-xs uppercase text-muted-foreground"><tr><th className="py-3">Level</th><th>Rise Coins</th><th>Reward</th><th>Status</th></tr></thead><tbody>{milestoneRewards.map((reward) => { const req = levelBenefits.find((l) => l.level === reward.level)?.riseCoinsRequired ?? 0; const earned = coins >= req; return <tr key={reward.level} className="border-b border-border/60 last:border-0"><td className="py-3 font-semibold">{reward.level}</td><td>{req.toLocaleString()}</td><td>{format(reward.amount)}</td><td><span className={`rounded-full px-2 py-1 text-xs font-semibold ${earned ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>{earned ? "Unlocked" : "Locked"}</span></td></tr>; })}</tbody></table></div></section>
     <div className="grid gap-4 lg:grid-cols-2"><section className="dashboard-panel p-5"><h2 className="section-title"><Wallet className="size-5 text-primary" /> Recent wallet activity</h2><div className="mt-4 space-y-2">{(data?.recentTransactions ?? []).slice(0, 4).map((tx) => <div className="flex items-center justify-between rounded-xl bg-muted/60 p-3" key={tx.id}><div><p className="text-sm font-semibold">{tx.description}</p><p className="text-xs text-muted-foreground">{new Date(tx.createdAt).toLocaleDateString("en-PK")}</p>{tx.riseCoinsEarned ? <p className="mt-0.5 text-xs font-semibold text-primary">+{tx.riseCoinsEarned.toLocaleString()} Rise Coins</p> : null}</div><span className={tx.direction === "credit" ? "font-bold text-success" : "font-bold text-destructive"}>{tx.direction === "credit" ? "+" : "-"}{format(tx.amount)}</span></div>)}{!data?.recentTransactions?.length && <p className="text-sm text-muted-foreground">No recent activity yet.</p>}</div></section><section className="dashboard-panel p-5"><h2 className="section-title"><Megaphone className="size-5 text-primary" /> Announcements</h2><div className="mt-4 space-y-3">{(data?.announcements ?? []).slice(0, 3).map((a) => <div key={a.id}><p className="font-semibold">{a.title}</p><p className="mt-1 text-sm text-muted-foreground">{a.message}</p></div>)}{!data?.announcements?.length && <p className="text-sm text-muted-foreground">No announcements right now.</p>}</div></section></div>
     <section className="dashboard-panel flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="section-title"><KeyRound className="size-5 text-primary" /> Grow your network</h2><p className="mt-1 text-sm text-muted-foreground">Share your referral link and track your team from Referrals.</p></div><Link to="/referrals" className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground">Open referrals <ArrowUpRight className="size-4" /></Link></section>
+    <section className="dashboard-panel flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="section-title"><MessageCircle className="size-5 text-primary" /> Need help?</h2><p className="mt-1 text-sm text-muted-foreground">Reach out to the NexoRise admin anytime for support or guidance.</p></div><button onClick={() => setContactOpen(true)} className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground">Contact Us <MessageCircle className="size-4" /></button></section>
+    <ContactUsDialog open={contactOpen} onOpenChange={setContactOpen} />
   </div>;
 }

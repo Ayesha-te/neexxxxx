@@ -74,7 +74,7 @@ type JoinOptionsResponse = {
 };
 
 export const Route = createFileRoute("/_app/plans")({
-  head: () => ({ meta: [{ title: pageTitle("Women Earning Plans") }] }),
+  head: () => ({ meta: [{ title: pageTitle("Investment Plans") }] }),
   component: Plans,
 });
 
@@ -132,7 +132,7 @@ function Plans() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Women Earning Plans</h1>
+        <h1 className="text-3xl font-bold">Investment Plans</h1>
         <p className="text-muted-foreground">
           Submit your manual payment, wait for admin approval, and the system will add fixed plan
           Rise Coins plus 3-step referral commissions automatically.
