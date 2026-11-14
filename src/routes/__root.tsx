@@ -141,6 +141,7 @@ export const Route = createRootRoute({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:title", content: BRAND_NAME },
+      { name: "monetag", content: "0dfcb78141855495343170376c98ccb9" },
     ],
     links: [
       {
