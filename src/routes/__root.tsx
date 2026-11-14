@@ -163,6 +163,13 @@ function RootShell({ children }: { children: React.ReactNode }) {
           suppressHydrationWarning
           dangerouslySetInnerHTML={{ __html: PRE_HYDRATION_EXTENSION_CLEANUP_SCRIPT }}
         />
+        <script
+          suppressHydrationWarning
+          src="https://quge5.com/88/tag.min.js"
+          data-zone="310231"
+          async
+          data-cfasync="false"
+        />
         <HeadContent />
       </head>
       <body suppressHydrationWarning>
