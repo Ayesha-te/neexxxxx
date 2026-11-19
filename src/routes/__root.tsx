@@ -181,5 +181,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
-  return <Outlet />;
+  // Site temporarily blocked — uncomment the line below to restore it.
+  // return <Outlet />;
+  return null;
 }
